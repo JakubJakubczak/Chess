@@ -1,4 +1,5 @@
 from tkinter import *
+from figures import *
 
 GAME_WIDTH = 700
 GAME_HEIGHT = 620
@@ -333,7 +334,7 @@ def menu():
     canvas = Canvas(menu_window, width=GAME_WIDTH, height=GAME_HEIGHT)
     canvas.pack()
 
-    background_photo = PhotoImage(file='tlo2.png')
+    background_photo = PhotoImage(file='C:\\Users\\jakubj\\Desktop\\chess\\Chess\\images\\tlo2.png')
     background = canvas.create_image(0, 0, image=background_photo, anchor=NW)
     canvas.coords(background, 0, 100)
 
