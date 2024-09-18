@@ -1,3 +1,8 @@
+### jak zrobic wyswietlanie caly czas stanu jak i zmian
+### w konstruktorze figury dodać boarda, po to, żeby init zrobić
+
+
+
 class Figure:
     def __init__(self,color, positionX, positionY, image,canvas_image):
         self.color = color

@@ -58,20 +58,14 @@ class Menu:
 
     def start(self):
         global menu_window
-        global game_window
-        game_window = Tk()
         menu_window.destroy()
-        game_window.title("GAME")
-        game_window.resizable(False, False)
-        # game = Game()
+        game = Game()
 
         # global canvas_game
         # canvas_game = canvas_game(game_window, width=GAME_WIDTH, height=GAME_HEIGHT)
         # drawBoard(game_window, canvas_game)
         # loadFigures(canvas_game)
         # drawFigures()
-
-        game_window.mainloop()
 
     def setup(self):
         pass
