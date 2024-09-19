@@ -1,3 +1,7 @@
+from tkinter.constants import BOTTOM
+from tkinter import *
+from Const import *
+from Const import *
 ###############
 ## NOTATION ##
 ## QUEEN - 9
@@ -8,20 +12,46 @@
 ## PAWN - 1
 
 class Board:
-    def __init__(self):
+    def __init__(self, frame):
+        self.frame = frame
+        self.canvas_board = Canvas(self.frame, width=BOARD_WIDTH, height=BOARD_HEIGHT)
+        self.canvas_label1 = Canvas(self.frame, width=LABEL_VERTUCAL_WIDTH, height=LABEL_VERTICAL_HEIGHT)
+        self.canvas_label2 = Canvas(self.frame, width=LABEL_VERTICAL_HEIGHT, height=LABEL_VERTUCAL_WIDTH)
         self.board = [
-            [5, 3, 4, 9, 2, 4, 3, 5]
-            [1, 1, 1, 1, 1, 1, 1, 1]
-            [0, 0, 0, 0, 0, 0, 0, 0]
-            [0, 0, 0, 0, 0, 0, 0, 0]
-            [0, 0, 0, 0, 0, 0, 0, 0]
-            [0, 0, 0, 0, 0, 0, 0, 0]
-            [1, 1, 1, 1, 1, 1, 1, 1]
+            [5, 3, 4, 9, 2, 4, 3, 5],
+            [1, 1, 1, 1, 1, 1, 1, 1],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [1, 1, 1, 1, 1, 1, 1, 1],
             [5, 3, 4, 9, 2, 4, 3, 5]
         ]
+        self.display_board()
+        self.display_labels()
 
     def display_board(self):
-        pass
+        for row in range(0, SIZE):
+            y1 = row * SPACE_SIZE
+            y2 = y1 + SPACE_SIZE
+            for col in range(0, SIZE):
+                if((row + col) %2 == 0):
+                    color = SQUARES_COLORS[0]
+                else:
+                    color = SQUARES_COLORS[1]
+                x1 = col * SPACE_SIZE
+                x2 = x1 + SPACE_SIZE
+                self.canvas_board.create_rectangle(x1,
+                                        y1,
+                                        x2,
+                                        y2,
+                                        fill=color)
+
+        self.canvas_board.pack(side=TOP, anchor=NE)
+        # iterujemy po boardzie, jeśli miejsce = 0 to pass, a jesli nie to wyswietlamy figurę
+    def display_labels(self):
+        self.canvas_label1.pack(side=TOP, anchor=NW)
+        self.canvas_label2.pack(side=BOTTOM, anchor=SE)
 
     def move(self, start, end):
         # check if the move is valid

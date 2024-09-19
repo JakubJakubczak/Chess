@@ -1,7 +1,10 @@
 from tkinter import *
+from Const import *
+from game import *
+
 class Menu:
     def __init__(self):
-        display_menu()
+        self.display_menu()
 
     def display_menu(self):
         global menu_window
@@ -27,14 +30,14 @@ class Menu:
 
         button1 = Button(menu_window, text="Start the game",
                          font=("Roboto"),
-                         command=start,
+                         command=self.start,
                          fg="#00FF00",
                          bg="black",
                          borderwidth=5,
                          relief="raised")
         button2 = Button(menu_window, text="Exit",
                          font=("Roboto"),
-                         command=exit,
+                         command=self.exit,
                          fg="#00FF00",
                          bg="black", )
         button1.pack()

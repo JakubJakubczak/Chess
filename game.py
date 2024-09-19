@@ -1,18 +1,23 @@
 from Const import *
+from board import *
+from figures import *
+from game_menu import *
 from tkinter import *
 from tkinter import messagebox
 
 class Game:
     def __init__(self):
         self.game_window = Tk()
-        game_window.title("GAME")
-        game_window.resizable(False, False)
-        self.canvas = Canvas(game_window, width=GAME_WIDTH, height=GAME_HEIGHT)
+        self.game_window.title("GAME")
+        self.game_window.geometry('750x750')
+        self.game_window.resizable(False, False)
+        self.frame = Frame(self.game_window, width=GAME_WIDTH, height=GAME_HEIGHT)
         self.game_on = True
         self.white_turn = True
-        self.board = Board(canvas)
-        self.figures = Figures(canvas)
-        self.game_menu = Game_Menu()
+        self.game_menu = Game_menu(self.frame)
+        self.board = Board(self.frame)
+        # self.figures = Figures(canvas, board)
+        self.frame.pack()
         self.game_window.mainloop()
 
     def is_Game_On(self):
