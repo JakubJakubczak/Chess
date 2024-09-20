@@ -2,6 +2,7 @@ class Dragger:
     def __init__(self, canvas):
         pass
 
+### dragge musi miec info w jakim polozeniu startowym byla bierka oraz jaka to bierka
     def drag_start(event):
         global initial_position
         global drag_data
@@ -19,7 +20,6 @@ class Dragger:
             canvas.move(drag_data['item'], x, y)
             drag_data['x'], drag_data['y'] = event.x, event.y
 
-    def drag_stop(event):
+    def drag_stop(event,canvas):
         global drag_data
-    # if drag_data:
-    # if drag_data['x']
+
