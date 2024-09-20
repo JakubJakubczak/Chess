@@ -1,25 +1,31 @@
 class Dragger:
     def __init__(self, canvas):
-        pass
+        self.canvas = canvas
+        self.drag_data = {"x": 0, "y": 0, "item": None}
+        self.initial_position = {"x": 0, "y": 0, "item": None}
 
 ### dragge musi miec info w jakim polozeniu startowym byla bierka oraz jaka to bierka
-    def drag_start(event):
-        global initial_position
-        global drag_data
-        item = event.widget.find_closest(event.x, event.y)
-        item_type = event.widget.type(item)
-        if item_type == 'rectangle':  # Check if the clicked item is a rectangle
-            return  # Ignore rectangles
-        drag_data = {'x': event.x, 'y': event.y, 'item': item}
-        initial_position = {'x': event.x, 'y': event.y, 'item': item}
+    def drag_start(self, event):
+        self.drag_data["item"] = self.canvas.find_closest(event.x, event.y)[0]
+        self.drag_data["x"] = event.x
+        self.drag_data["y"] = event.y
+        self.initial_position = {'x': event.x, 'y': event.y, 'item': self.drag_data["item"]}
 
-    def drag_motion(event, canvas):
-        global drag_data
-        if drag_data:
-            x, y = event.x - drag_data['x'], event.y - drag_data['y']
-            canvas.move(drag_data['item'], x, y)
-            drag_data['x'], drag_data['y'] = event.x, event.y
+    def drag_motion(self, event):
+        # compute how much the mouse has moved
+        delta_x = event.x - self.drag_data["x"]
+        delta_y = event.y - self.drag_data["y"]
+        # move the object the appropriate amount
+        self.canvas.move(self.drag_data["item"], delta_x, delta_y)
+        # record the new position
+        self.drag_data["x"] = event.x
+        self.drag_data["y"] = event.y
 
-    def drag_stop(event,canvas):
-        global drag_data
+    def drag_stop(self, event):
+        """End drag of an object"""
+        # reset the drag data
+        self.canvas.move(self.initial_position["item"], self.initial_position["x"], self.initial_position["y"])
+        self.drag_data["x"] = self.initial_position["x"]
+        self.drag_data["y"] = self.initial_position["y"]
+
 

@@ -19,9 +19,13 @@ class Board:
         self.canvas_label2 = Canvas(self.frame, width=LABEL_VERTICAL_HEIGHT, height=LABEL_VERTUCAL_WIDTH)
         self.canvas_label1.create_text(20, 20, text="1", font=("Arial", 16), fill="black")
         self.canvas_label2.create_text(20, 20, text="1", font=("Arial", 16), fill="black")
+
+        self.display_board()
+        self.display_labels()
+
         self.board = [
-            [5, 3, 4, 9, 2, 4, 3, 5],
-            [1, 1, 1, 1, 1, 1, 1, 1],
+            [-5, -3, -4, -9, -2, -4, -3, -5],
+            [-1, -1, -1, -1, -1, -1, -1, -1],
             [0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0],
@@ -29,8 +33,6 @@ class Board:
             [1, 1, 1, 1, 1, 1, 1, 1],
             [5, 3, 4, 9, 2, 4, 3, 5]
         ]
-        self.display_board()
-        self.display_labels()
 
     def display_board(self):
         for row in range(0, SIZE):
@@ -49,11 +51,11 @@ class Board:
                                         y2,
                                         fill=color)
 
-        self.canvas_board.pack(side=RIGHT, anchor=NE)
+        self.canvas_board.place(x=50, y=100)
         # iterujemy po boardzie, jeśli miejsce = 0 to pass, a jesli nie to wyswietlamy figurę
     def display_labels(self):
-        self.canvas_label1.pack(side=LEFT, anchor=NW)
-        self.canvas_label2.pack(side=BOTTOM, anchor=SE)
+        self.canvas_label1.place(x=0, y=100)
+        self.canvas_label2.place(x=50, y=700)
 
     def move(self, start, end):
         # check if the move is valid
