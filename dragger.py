@@ -1,8 +1,9 @@
 class Dragger:
-    def __init__(self, canvas):
+    def __init__(self, canvas, board):
         self.canvas = canvas
         self.drag_data = {"x": 0, "y": 0, "item": None}
         self.initial_position = {"x": 0, "y": 0, "item": None}
+        self.figure = None
 
 ### dragge musi miec info w jakim polozeniu startowym byla bierka oraz jaka to bierka
     def drag_start(self, event):
@@ -10,6 +11,7 @@ class Dragger:
         self.drag_data["x"] = event.x
         self.drag_data["y"] = event.y
         self.initial_position = {'x': event.x, 'y': event.y, 'item': self.drag_data["item"]}
+        # self.figure =
 
     def drag_motion(self, event):
         # compute how much the mouse has moved
@@ -24,8 +26,8 @@ class Dragger:
     def drag_stop(self, event):
         """End drag of an object"""
         # reset the drag data
-        self.canvas.move(self.initial_position["item"], self.initial_position["x"], self.initial_position["y"])
-        self.drag_data["x"] = self.initial_position["x"]
-        self.drag_data["y"] = self.initial_position["y"]
+       # if mouse is on board; else back to initial position
+       # validate - move(start, end) - a function that checks if the move is valid
+       # calculate position on the board and on the canvas
 
 

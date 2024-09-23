@@ -47,6 +47,7 @@ class Figures:
 
     def display_figures(self, first_cordinates, canvas, board):
         canvas_images = []
+        ##### dict that will store position and figure
         for i in range(SIZE):
             for j in range(SIZE):
                 if board[i][j] != 0:
@@ -57,9 +58,11 @@ class Figures:
         return canvas_images
 
     def bind_figures(self, canvas, canvas_images):
-        dragger = Dragger(canvas)
+        dragger = Dragger(canvas, self.board)
+        position = [0, 0]
+        figure = None
         for image in canvas_images:
-            canvas.tag_bind(image,  "<ButtonPress-1>", dragger.drag_start)
+            canvas.tag_bind(image,  "<ButtonPress-1>", dragger.drag_start(position, figure)) ######## DO IT
             canvas.tag_bind(image,  "<B1-Motion>", dragger.drag_motion)
             canvas.tag_bind(image, "<ButtonRelease-1>", dragger.drag_stop)
 
