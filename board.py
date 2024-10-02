@@ -1,7 +1,7 @@
 from tkinter.constants import BOTTOM
 from tkinter import *
 from Const import *
-from Const import *
+from engine import *
 ###############
 ## NOTATION ##
 ## QUEEN - 9
@@ -33,6 +33,7 @@ class Board:
             [1, 1, 1, 1, 1, 1, 1, 1],
             [5, 3, 4, 9, 2, 4, 3, 5]
         ]
+        self.engine = Engine(self.board)
 
     def display_board(self):
         for row in range(0, SIZE):
@@ -57,10 +58,12 @@ class Board:
         self.canvas_label1.place(x=0, y=100)
         self.canvas_label2.place(x=50, y=700)
 
-    def move(self, start, end):
-        # check if the move is valid
-        # if valid, make the move
-        # if not valid, raise an error
+    # przemieszczanie tylko w tablicy, grafika zostaje
+    def move(self, start_x, start_y, end_x, end_y):
+        piece = self.board[start_y][start_x]
+        if piece!= 0:
+            self.board[end_y][end_x] = piece
+            self.board[start_y][start_x] = 0
         pass
 
     def pawn_promotion(self, pawn, new_piece):

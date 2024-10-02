@@ -1,7 +1,7 @@
 from tkinter import *
 from Const import *
 from game import *
-
+from PIL import Image, ImageTk
 class Menu:
     def __init__(self):
         self.display_menu()
@@ -16,7 +16,7 @@ class Menu:
         canvas_menu = Canvas(menu_window, width=GAME_WIDTH, height=GAME_HEIGHT)
         canvas_menu.pack()
 
-        background_photo = PhotoImage(file='tlo2.png')
+        background_photo = ImageTk.PhotoImage(Image.open(f"images/tlo2.png"))
         background = canvas_menu.create_image(0, 0, image=background_photo, anchor=NW)
         canvas_menu.coords(background, 0, 100)
 
