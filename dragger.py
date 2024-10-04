@@ -9,7 +9,6 @@ class Dragger:
         self.initial_index  = [None,None]
         self.figure = 0
 
-
     # ustalic pozycje na boardzie za pomocą położenia myszy
     # ustalic jaka to figura na podstawie boarda
     # zmiana boarda
@@ -24,82 +23,85 @@ class Dragger:
 
        return x_index,y_index
 
-    def get_figure(self, x, y):
-        if x == None or y == None or x >= SIZE or y >= SIZE:
-            return None
-
-        figure = self.board.board[x][y]
-        return figure
 
     def drag_start(self, event):
-        self.drag_data["item"] = self.canvas.find_closest(event.x, event.y)[0]
-        self.drag_data["x"] = event.x
-        self.drag_data["y"] = event.y
+        print("drag_start")
         x,y = self.calculate_board_position(event.x, event.y)
-        self.initial_position = {'x': event.x, 'y': event.y, 'item': self.drag_data["item"]}
-        self.initial_index = [x, y]
-        self.figure = self.get_figure(x, y)
-
-        # centrowanie figury po kliknięciu
-        x, y = self.canvas.coords(self.drag_data["item"])
-        delta_x = x - event.x
-        delta_y = y - event.y
-        self.canvas.move(self.drag_data["item"], -delta_x, -delta_y)
+        print(f"x: {x}, y: {y}")
+        print(self.board.engine.is_white_piece(x,y))
+        print(self.board.white_turn)
         print(self.board.board)
+        if self.board.engine.is_white_piece(x, y) == self.board.white_turn:
+            self.drag_data["item"] = self.canvas.find_closest(event.x, event.y)[0]
+
+        if self.drag_data["item"]:
+            self.drag_data["x"] = event.x
+            self.drag_data["y"] = event.y
+            self.initial_index = [x, y]
+            self.figure = self.board.engine.get_figure(x, y)
+
+            # centrowanie figury po kliknięciu
+            x, y = self.canvas.coords(self.drag_data["item"])
+            delta_x = x - event.x
+            delta_y = y - event.y
+            self.initial_position = {'x': x, 'y': y, 'item': self.drag_data["item"]}
+            self.canvas.move(self.drag_data["item"], -delta_x, -delta_y)
+            print(self.board.board)
+
 
     def drag_motion(self, event):
-        # compute how much the mouse has moved
-        delta_x = event.x - self.drag_data["x"]
-        delta_y = event.y - self.drag_data["y"]
-        # move the object the appropriate amount
-        self.canvas.move(self.drag_data["item"], delta_x, delta_y)
-        # record the new position
-        self.drag_data["x"] = event.x
-        self.drag_data["y"] = event.y
+        # print("drag_motion")
+        if self.drag_data["item"] is not None:
+            ## compute how much the mouse has moved
+            delta_x = event.x - self.drag_data["x"]
+            delta_y = event.y - self.drag_data["y"]
+            # move the object the appropriate amount
+            self.canvas.move(self.drag_data["item"], delta_x, delta_y)
+            # record the new position
+            self.drag_data["x"] = event.x
+            self.drag_data["y"] = event.y
 
     def drag_stop(self, event):
-        x_start, y_start = self.calculate_board_position(self.initial_position["x"], self.initial_position["y"])
-        delta_x = self.drag_data["x"] - self.initial_position["x"]
-        delta_y = self.drag_data["y"] - self.initial_position["y"]
-        x_end, y_end = self.calculate_board_position(self.drag_data["x"], self.drag_data["y"])
-        if x_end is None or y_end is None:
-            self.canvas.move(self.drag_data["item"], -delta_x, -delta_y)
-            return
+        # print("drag_stop")
+        if self.drag_data["item"] is not None:
+            x_start, y_start = self.calculate_board_position(self.initial_position["x"], self.initial_position["y"])
+            delta_x = self.drag_data["x"] - self.initial_position["x"]
+            delta_y = self.drag_data["y"] - self.initial_position["y"]
+            x_end, y_end = self.calculate_board_position(self.drag_data["x"], self.drag_data["y"])
+            if x_end is None or y_end is None:
+                self.canvas.move(self.drag_data["item"], -delta_x, -delta_y)
+                self.drag_data["item"] = None
+                return
 
-        if not self.board.engine.is_valid_move(x_start, y_start, y_start, y_end):
-            self.canvas.move(self.drag_data["item"], -delta_x, -delta_y)
-            return
+            if not self.board.engine.is_valid_move(x_start, y_start, y_start, y_end):
+                self.canvas.move(self.drag_data["item"], -delta_x, -delta_y)
+                self.drag_data["item"] = None
+                return
 
-        self.board.move(x_start, y_start, x_end, y_end)
+            if x_start == x_end and y_start == y_end:
+                self.canvas.move(self.drag_data["item"], -delta_x, -delta_y)
+                self.drag_data["item"] = None
+                return
 
 
-        figure_coords_x = SPACE_SIZE / 2
-        figure_coords_y = SPACE_SIZE / 2
+            self.board.move(x_start, y_start, x_end, y_end)
+            print(self.board.white_turn)
+            self.board.white_turn = not self.board.white_turn
+            ## centrowanie figury po przeniesieniu
 
-        center_coords_x = figure_coords_x + (x_end * SPACE_SIZE)
-        center_coords_y = figure_coords_y + (y_end * SPACE_SIZE)
+            figure_coords_x = SPACE_SIZE / 2
+            figure_coords_y = SPACE_SIZE / 2
 
-        delta_center_x = self.drag_data["x"] - center_coords_x
-        delta_center_y = self.drag_data["y"] - center_coords_y
+            center_coords_x = figure_coords_x + (x_end * SPACE_SIZE)
+            center_coords_y = figure_coords_y + (y_end * SPACE_SIZE)
 
-        print(center_coords_x)
-        print(center_coords_y)
-        print(delta_center_x)
-        print(delta_center_y)
-        print(self.drag_data["x"])
-        print(self.drag_data["y"])
+            delta_center_x = self.drag_data["x"] - center_coords_x
+            delta_center_y = self.drag_data["y"] - center_coords_y
 
-        self.canvas.move(self.drag_data["item"], -delta_center_x, -delta_center_y)
-        print(self.board.board)
 
-def get_center_of_object(canvas, rect):
-    # Get the bounding box coordinates of the object
-    x1, y1, x2, y2 = canvas.coords(rect)
+            self.canvas.move(self.drag_data["item"], -delta_center_x, -delta_center_y)
+            print(self.board.board)
+            self.drag_data["item"] = None
 
-    # Calculate the center
-    center_x = (x1 + x2) / 2
-    center_y = (y1 + y2) / 2
-
-    return center_x, center_y
 
 

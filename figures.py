@@ -59,9 +59,10 @@ class Figures:
 
     def bind_figures(self, canvas, canvas_images):
         dragger = Dragger(canvas, self.board)
-        position = [0, 0]
-        figure = None
         for image in canvas_images:
+            # Add a specific tag to all piece images
+            canvas.addtag_withtag("piece", image)
+
             canvas.tag_bind(image,  "<ButtonPress-1>", dragger.drag_start) ######## DO IT
             canvas.tag_bind(image,  "<B1-Motion>", dragger.drag_motion)
             canvas.tag_bind(image, "<ButtonRelease-1>", dragger.drag_stop)

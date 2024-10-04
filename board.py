@@ -13,6 +13,13 @@ from engine import *
 
 class Board:
     def __init__(self, frame):
+        self.game_on = True
+        self.white_turn = True
+        self.history = [] # historia jest w formacie PGN
+        self.result = None
+        self.threefold_repetition = 0
+        self.fifty_move_rule = 0
+
         self.frame = frame
         self.canvas_board = Canvas(self.frame, width=BOARD_WIDTH, height=BOARD_HEIGHT)
         self.canvas_label1 = Canvas(self.frame, width=LABEL_VERTUCAL_WIDTH, height=LABEL_VERTICAL_HEIGHT)
@@ -60,14 +67,38 @@ class Board:
 
     # przemieszczanie tylko w tablicy, grafika zostaje
     def move(self, start_x, start_y, end_x, end_y):
+        # srpawdzic czy to moze roszada albo promocja pionka
         piece = self.board[start_y][start_x]
         if piece!= 0:
             self.board[end_y][end_x] = piece
             self.board[start_y][start_x] = 0
         pass
 
-    def pawn_promotion(self, pawn, new_piece):
+    def castling(self, color):
         pass
 
-    def castling(self):
+    def pawn_promotion(self, x_start, y_start, x_end, y_end):
         pass
+
+    def move_pgn(self, string):
+        pass
+
+    def add_to_history(self,x_start, y_start, x_end, y_end):
+        # is it castling
+        # is it en passant
+        # is it promotion
+        # is it beating
+        # is it only possible move
+        pass
+
+
+    def is_Game_On(self):
+        if self.game_on:
+            return True
+        else:
+            return False
+    def is_white_turn(self):
+        if self.white_turn:
+            return True
+        else:
+            return False
