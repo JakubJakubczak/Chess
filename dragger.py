@@ -73,7 +73,7 @@ class Dragger:
                 self.drag_data["item"] = None
                 return
 
-            if not self.board.engine.is_valid_move(x_start, y_start, y_start, y_end):
+            if not self.board.engine.is_valid_move(x_start, y_start, x_end, y_end):
                 self.canvas.move(self.drag_data["item"], -delta_x, -delta_y)
                 self.drag_data["item"] = None
                 return
@@ -97,7 +97,6 @@ class Dragger:
 
             delta_center_x = self.drag_data["x"] - center_coords_x
             delta_center_y = self.drag_data["y"] - center_coords_y
-
 
             self.canvas.move(self.drag_data["item"], -delta_center_x, -delta_center_y)
             print(self.board.board)
