@@ -1,12 +1,12 @@
-
 from Const import *
 class Dragger:
-    def __init__(self, canvas, board):
+    def __init__(self, figures, canvas, board):
+        self.figures = figures
         self.board = board
         self.canvas = canvas
         self.drag_data = {"x": 0, "y": 0, "item": None}
         self.initial_position = {"x": 0, "y": 0, "item": None}
-        self.initial_index  = [None,None]
+        self.initial_index = [None,None]
         self.figure = 0
 
     # ustalic pozycje na boardzie za pomocą położenia myszy
@@ -32,7 +32,7 @@ class Dragger:
         print(self.board.white_turn)
         print(self.board.board)
         if self.board.engine.is_white_piece(x, y) == self.board.white_turn:
-            self.drag_data["item"] = self.canvas.find_closest(event.x, event.y)[0]
+            self.drag_data["item"] = self.figures.canvas_images[y][x]
 
         if self.drag_data["item"]:
             self.drag_data["x"] = event.x
@@ -69,6 +69,7 @@ class Dragger:
             delta_y = self.drag_data["y"] - self.initial_position["y"]
             x_end, y_end = self.calculate_board_position(self.drag_data["x"], self.drag_data["y"])
             if x_end is None or y_end is None:
+                ## change it to one function in figures class
                 self.canvas.move(self.drag_data["item"], -delta_x, -delta_y)
                 self.drag_data["item"] = None
                 return
@@ -85,20 +86,9 @@ class Dragger:
 
 
             self.board.move(x_start, y_start, x_end, y_end)
-            print(self.board.white_turn)
             self.board.white_turn = not self.board.white_turn
-            ## centrowanie figury po przeniesieniu
+            self.figures.move_images(self.drag_data, x_start, y_start, x_end, y_end)
 
-            figure_coords_x = SPACE_SIZE / 2
-            figure_coords_y = SPACE_SIZE / 2
-
-            center_coords_x = figure_coords_x + (x_end * SPACE_SIZE)
-            center_coords_y = figure_coords_y + (y_end * SPACE_SIZE)
-
-            delta_center_x = self.drag_data["x"] - center_coords_x
-            delta_center_y = self.drag_data["y"] - center_coords_y
-
-            self.canvas.move(self.drag_data["item"], -delta_center_x, -delta_center_y)
             print(self.board.board)
             self.drag_data["item"] = None
 

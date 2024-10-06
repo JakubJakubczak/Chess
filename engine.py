@@ -32,6 +32,14 @@ class Engine:
         pass
     def is_legal_en_passant(self, x_start, y_start, x_end, y_end):
         pass
+
+    ## it should be called always after checking if move is valid
+    def is_it_capture(self, x_end, y_end):
+        if self.board[y_end][x_end] == 0:
+            return False
+        else:
+            return True
+
     def is_valid_move(self, x_start, y_start, x_end, y_end):
         moves = self.valid_moves(x_start, y_start)
         print(f"valid moves {moves}")
