@@ -4,8 +4,20 @@ class Engine:
     def __init__(self, board):
         self.board = board
 
-    def is_check(self):
-        pass
+    def is_check(self, for_white):
+        king_position = self.king_position(for_white)
+        all_moves = self.all_valid_moves(not for_white)
+
+        length = len(all_moves)
+
+        for i in range(length):
+            move = all_moves[i]
+            if move[2] == king_position[0] and move[3] == king_position[1]:
+                print("CHECK")
+                return True
+
+        return False
+
 
     def is_checkmate(self):
         pass
@@ -40,10 +52,22 @@ class Engine:
         else:
             return True
 
+    def king_position(self, for_white):
+        if for_white:
+            value = 2
+        else:
+            value = -2
+
+        for i in range(SIZE):
+            for k in range(SIZE):
+                if self.board[k][i] == value:
+                    position = (i, k)
+                    return position
+
     def is_valid_move(self, x_start, y_start, x_end, y_end):
         moves = self.valid_moves(x_start, y_start)
         print(f"valid moves {moves}")
-        move = (x_end, y_end)
+        move = (x_start, y_start, x_end, y_end)
 
         if moves == None:
             return False
@@ -53,9 +77,32 @@ class Engine:
         else:
             return False
 
-    ## generating all posible moves for AI
-    def all_valid_moves(self):
-        pass
+    ## generating all posible moves for white or for black
+    def all_valid_moves(self, for_white):
+        all_moves = []
+        for i in range(SIZE):
+            for k in range(SIZE):
+                if self.board[k][i] == 0:
+                    continue
+
+                moves = self.valid_moves(i, k)
+                length = len(moves)
+                if for_white and self.board[k][i] > 0:
+                    for j in range(length):
+                        all_moves.append(moves[j])
+                if not for_white and self.board[k][i] < 0:
+                    for j in range(length):
+                        all_moves.append(moves[j])
+
+        if (1, 6, 1, 5) in all_moves:
+            print("Found")
+        else:
+            print("Not Found")
+
+        return all_moves
+
+
+
     def valid_moves(self,x,y):
         piece = self.get_figure(x, y)
         moves = []
@@ -68,31 +115,31 @@ class Engine:
 
             # vertical for white pawn
             if piece == 1 and y < SIZE - 1 and self.board[y - 1][x] == 0:
-                moves.append((x, y - 1))
+                moves.append((x, y, x, y - 1))
                 if y == 6 and self.board[y - 2][x] == 0:
-                    moves.append((x, y - 2))
+                    moves.append((x, y, x, y - 2))
 
             # vertical for black pawn
             if piece == -1 and y > 0 and self.board[y + 1][x] == 0:
-                moves.append((x, y + 1))
+                moves.append((x, y, x, y + 1))
                 if y == 1 and self.board[y + 2][x] == 0:
-                    moves.append((x, y + 2))
+                    moves.append((x, y, x, y + 2))
 
             # diagonal to left for white pawn
             if piece == 1 and y > 0 and x > 0 and self.board[y - 1][x - 1] < 0:
-                moves.append((x - 1, y - 1))
+                moves.append((x, y, x - 1, y - 1))
 
             # diagonal to right for white pawn
             if piece == 1 and y > 0 and x < SIZE - 1 and self.board[y - 1][x + 1] < 0:
-                moves.append((x + 1, y - 1))
+                moves.append((x, y, x + 1, y - 1))
 
             # diagonal to left for black pawn
             if piece == -1 and y < SIZE - 1 and x > 0 and self.board[y + 1][x - 1] > 0:
-                moves.append((x - 1, y + 1))
+                moves.append((x, y, x - 1, y + 1))
 
             # diagonal to right for black pawn
             if piece == -1 and y < SIZE - 1 and x < SIZE - 1 and self.board[y + 1][x + 1] > 0:
-                moves.append((x + 1, y + 1))
+                moves.append((x, y, x + 1, y + 1))
 
             ## EN PASSANT !
 
@@ -105,7 +152,7 @@ class Engine:
             for dx, dy in direction:
                 x_move = x + dx
                 y_move = y + dy
-                move = (x_move, y_move)
+                move = (x, y, x_move, y_move)
                 if not (x_move >= 0 and y_move >= 0 and x_move < SIZE and y_move < SIZE ):
                     continue
                 if self.board[y_move][x_move]!= 0:  ## if there is a piece
@@ -125,7 +172,7 @@ class Engine:
                 for k in range(1, SIZE):
                     x_move = x + k * dx
                     y_move = y + k * dy
-                    move = (x_move, y_move)
+                    move = (x, y, x_move, y_move)
                     if not (x_move >= 0 and y_move >= 0 and x_move < SIZE and y_move < SIZE ):
                         continue
                     if self.board[y_move][x_move]!= 0:  ## if there is a piece
@@ -145,7 +192,7 @@ class Engine:
                 for k in range(1, SIZE):
                     x_move = x + k * dx
                     y_move = y + k * dy
-                    move = (x_move, y_move)
+                    move = (x, y, x_move, y_move)
                     if not (x_move >= 0 and y_move >= 0 and x_move < SIZE and y_move < SIZE):
                         continue
                     if self.board[y_move][x_move] != 0:  ## if there is a piece
@@ -166,7 +213,7 @@ class Engine:
             for dx, dy in direction:
                 x_move = x +  dx
                 y_move = y +  dy
-                move = (x_move, y_move)
+                move = (x, y, x_move, y_move)
                 if not (x_move >= 0 and y_move >= 0 and x_move < SIZE and y_move < SIZE):
                     continue
                 if self.board[y_move][x_move] != 0:  ## if there is a piece
@@ -186,7 +233,7 @@ class Engine:
                 for k in range(1, SIZE):
                     x_move = x + k * dx
                     y_move = y + k * dy
-                    move = (x_move, y_move)
+                    move = (x, y, x_move, y_move)
                     if not (x_move >= 0 and y_move >= 0 and x_move < SIZE and y_move < SIZE):
                         continue
                     if self.board[y_move][x_move] != 0:  ## if there is a piece

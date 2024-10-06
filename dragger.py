@@ -47,6 +47,7 @@ class Dragger:
             self.initial_position = {'x': x, 'y': y, 'item': self.drag_data["item"]}
             self.canvas.move(self.drag_data["item"], -delta_x, -delta_y)
             print(self.board.board)
+            print(self.board.engine.all_valid_moves(True))
 
 
     def drag_motion(self, event):
@@ -84,10 +85,11 @@ class Dragger:
                 self.drag_data["item"] = None
                 return
 
-
             self.board.move(x_start, y_start, x_end, y_end)
             self.board.white_turn = not self.board.white_turn
             self.figures.move_images(self.drag_data, x_start, y_start, x_end, y_end)
+
+            self.board.engine.is_check(self.board.white_turn)
 
             print(self.board.board)
             self.drag_data["item"] = None
