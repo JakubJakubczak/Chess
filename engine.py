@@ -1,13 +1,17 @@
 from Const import *
+import copy
 
 class Engine:
     def __init__(self, board):
         self.board = board
 
-    def is_check(self, for_white):
-        king_position = self.king_position(for_white)
-        all_moves = self.all_valid_moves(not for_white)
+    def is_check(self, for_white, board = None):
+        if board is None:
+            board = self.board
 
+        king_position = self.king_position(for_white, board)
+        print("king position" + str(king_position))
+        all_moves = self.all_valid_moves(not for_white, True, board)
         length = len(all_moves)
 
         for i in range(length):
@@ -19,11 +23,33 @@ class Engine:
         return False
 
 
-    def is_checkmate(self):
-        pass
+    def is_checkmate(self, board = None):
+        if board is None:
+            board = self.board
 
-    def is_stalemate(self):
-        pass
+        is_white_winner = None
+
+        if self.is_check(True, board) and self.valid_moves(False, board) == []:
+            return is_white_winner
+        if self.is_check(False, board) and self.valid_moves(True, board) == []:
+            return not is_white_winner
+
+        return None
+
+    def is_stalemate(self, board = None):
+        if board is None:
+            board = self.board
+
+        is_draw = False
+
+        ## check if it will generate bugs, probalby turns required
+        if self.valid_moves(True, board) == [] and not self.is_check(False, board):
+            is_draw = True
+        if self.valid_moves(False, board) == [] and not self.is_check(True, board):
+            is_draw = True
+
+        return is_draw
+
 
     def is_threefold_repetition(self):
         pass
@@ -40,19 +66,23 @@ class Engine:
     def is_castling_possible(self, x_start, y_start, x_end, y_end):
         pass
 
-    def is_piece_bound(self,x,y):
-        pass
     def is_legal_en_passant(self, x_start, y_start, x_end, y_end):
         pass
 
     ## it should be called always after checking if move is valid
-    def is_it_capture(self, x_end, y_end):
-        if self.board[y_end][x_end] == 0:
+    def is_it_capture(self, x_end, y_end, board = None):
+        if board is None:
+            board = self.board
+
+        if board[y_end][x_end] == 0:
             return False
         else:
             return True
 
-    def king_position(self, for_white):
+    def king_position(self, for_white, board = None):
+        if board is None:
+            board = self.board
+
         if for_white:
             value = 2
         else:
@@ -60,13 +90,15 @@ class Engine:
 
         for i in range(SIZE):
             for k in range(SIZE):
-                if self.board[k][i] == value:
+                if board[k][i] == value:
                     position = (i, k)
                     return position
 
-    def is_valid_move(self, x_start, y_start, x_end, y_end):
-        moves = self.valid_moves(x_start, y_start)
-        print(f"valid moves {moves}")
+    def is_valid_move(self, x_start, y_start, x_end, y_end, board = None):
+        if board is None:
+            board = self.board
+
+        moves = self.valid_moves(x_start, y_start,False, board) ## nie działa  self.valid_moves(x_start, y_start, board) ??
         move = (x_start, y_start, x_end, y_end)
 
         if moves == None:
@@ -78,33 +110,33 @@ class Engine:
             return False
 
     ## generating all posible moves for white or for black
-    def all_valid_moves(self, for_white):
+    def all_valid_moves(self, for_white, checking = False, board = None):
+        if board is None:
+            board = self.board
+
         all_moves = []
         for i in range(SIZE):
             for k in range(SIZE):
-                if self.board[k][i] == 0:
+                if board[k][i] == 0:
                     continue
 
-                moves = self.valid_moves(i, k)
-                length = len(moves)
-                if for_white and self.board[k][i] > 0:
-                    for j in range(length):
-                        all_moves.append(moves[j])
-                if not for_white and self.board[k][i] < 0:
-                    for j in range(length):
-                        all_moves.append(moves[j])
+                if for_white and not self.is_white_piece(i, k, board):
+                    continue
 
-        if (1, 6, 1, 5) in all_moves:
-            print("Found")
-        else:
-            print("Not Found")
+                moves = self.valid_moves(i, k, checking, board)
+                length = len(moves)
+                for j in range(length):
+                    all_moves.append(moves[j])
 
         return all_moves
 
 
 
-    def valid_moves(self,x,y):
-        piece = self.get_figure(x, y)
+    def valid_moves(self,x,y, checking = False, board = None):
+        if board is None:
+            board = self.board
+
+        piece = self.get_figure(x, y, board)
         moves = []
         if piece is None:
             return moves
@@ -114,31 +146,31 @@ class Engine:
         if abs(piece) == 1:
 
             # vertical for white pawn
-            if piece == 1 and y < SIZE - 1 and self.board[y - 1][x] == 0:
+            if piece == 1 and y < SIZE - 1 and board[y - 1][x] == 0:
                 moves.append((x, y, x, y - 1))
-                if y == 6 and self.board[y - 2][x] == 0:
+                if y == 6 and board[y - 2][x] == 0:
                     moves.append((x, y, x, y - 2))
 
             # vertical for black pawn
-            if piece == -1 and y > 0 and self.board[y + 1][x] == 0:
+            if piece == -1 and y > 0 and board[y + 1][x] == 0:
                 moves.append((x, y, x, y + 1))
-                if y == 1 and self.board[y + 2][x] == 0:
+                if y == 1 and board[y + 2][x] == 0:
                     moves.append((x, y, x, y + 2))
 
             # diagonal to left for white pawn
-            if piece == 1 and y > 0 and x > 0 and self.board[y - 1][x - 1] < 0:
+            if piece == 1 and y > 0 and x > 0 and board[y - 1][x - 1] < 0:
                 moves.append((x, y, x - 1, y - 1))
 
             # diagonal to right for white pawn
-            if piece == 1 and y > 0 and x < SIZE - 1 and self.board[y - 1][x + 1] < 0:
+            if piece == 1 and y > 0 and x < SIZE - 1 and board[y - 1][x + 1] < 0:
                 moves.append((x, y, x + 1, y - 1))
 
             # diagonal to left for black pawn
-            if piece == -1 and y < SIZE - 1 and x > 0 and self.board[y + 1][x - 1] > 0:
+            if piece == -1 and y < SIZE - 1 and x > 0 and board[y + 1][x - 1] > 0:
                 moves.append((x, y, x - 1, y + 1))
 
             # diagonal to right for black pawn
-            if piece == -1 and y < SIZE - 1 and x < SIZE - 1 and self.board[y + 1][x + 1] > 0:
+            if piece == -1 and y < SIZE - 1 and x < SIZE - 1 and board[y + 1][x + 1] > 0:
                 moves.append((x, y, x + 1, y + 1))
 
             ## EN PASSANT !
@@ -147,7 +179,7 @@ class Engine:
 
         if abs(piece) == 3:
             direction = [(1,2),(2,1),(1, -2),(-1,2),(-2,1),(-1,-2),(-2,-1),(2,-1)]
-            is_white = self.is_white_piece(x,y)
+            is_white = self.is_white_piece(x,y, board)
 
             for dx, dy in direction:
                 x_move = x + dx
@@ -155,8 +187,8 @@ class Engine:
                 move = (x, y, x_move, y_move)
                 if not (x_move >= 0 and y_move >= 0 and x_move < SIZE and y_move < SIZE ):
                     continue
-                if self.board[y_move][x_move]!= 0:  ## if there is a piece
-                    if self.is_white_piece(x_move, y_move) == is_white: ## if the piece is the same color
+                if board[y_move][x_move]!= 0:  ## if there is a piece
+                    if self.is_white_piece(x_move, y_move, board) == is_white: ## if the piece is the same color
                         continue
                     else:
                         moves.append(move)
@@ -166,7 +198,7 @@ class Engine:
         ## bishop moves
         if abs(piece) == 4:
             direction = [(1,1),(-1,1),(1,-1),(-1,-1)]
-            is_white = self.is_white_piece(x,y)
+            is_white = self.is_white_piece(x,y, board)
 
             for dx, dy in direction:
                 for k in range(1, SIZE):
@@ -175,8 +207,8 @@ class Engine:
                     move = (x, y, x_move, y_move)
                     if not (x_move >= 0 and y_move >= 0 and x_move < SIZE and y_move < SIZE ):
                         continue
-                    if self.board[y_move][x_move]!= 0:  ## if there is a piece
-                        if self.is_white_piece(x_move, y_move) == is_white: ## if the piece is the same color
+                    if board[y_move][x_move]!= 0:  ## if there is a piece
+                        if self.is_white_piece(x_move, y_move, board) == is_white: ## if the piece is the same color
                             break
                         else:
                             moves.append(move) ## capture
@@ -186,7 +218,7 @@ class Engine:
         ## rook moves
         if abs(piece) == 5:
             direction = [(1, 0), (-1, 0), (0, -1), (0, 1)]
-            is_white = self.is_white_piece(x, y)
+            is_white = self.is_white_piece(x, y, board)
 
             for dx, dy in direction:
                 for k in range(1, SIZE):
@@ -195,8 +227,8 @@ class Engine:
                     move = (x, y, x_move, y_move)
                     if not (x_move >= 0 and y_move >= 0 and x_move < SIZE and y_move < SIZE):
                         continue
-                    if self.board[y_move][x_move] != 0:  ## if there is a piece
-                        if self.is_white_piece(x_move, y_move) == is_white:  ## if the piece is the same color
+                    if board[y_move][x_move] != 0:  ## if there is a piece
+                        if self.is_white_piece(x_move, y_move, board) == is_white:  ## if the piece is the same color
                             break
                         else:
                             moves.append(move)  ## capture
@@ -208,7 +240,7 @@ class Engine:
         # check if opposite king is nearby
         if abs(piece) == 2:
             direction = [(1, 0), (-1, 0), (0, -1), (0, 1), (1,1),(-1,1),(1,-1),(-1,-1)]
-            is_white = self.is_white_piece(x, y)
+            is_white = self.is_white_piece(x, y, board)
 
             for dx, dy in direction:
                 x_move = x +  dx
@@ -216,8 +248,8 @@ class Engine:
                 move = (x, y, x_move, y_move)
                 if not (x_move >= 0 and y_move >= 0 and x_move < SIZE and y_move < SIZE):
                     continue
-                if self.board[y_move][x_move] != 0:  ## if there is a piece
-                    if self.is_white_piece(x_move, y_move) == is_white:  ## if the piece is the same color
+                if board[y_move][x_move] != 0:  ## if there is a piece
+                    if self.is_white_piece(x_move, y_move, board) == is_white:  ## if the piece is the same color
                         continue
                     else:
                         moves.append(move)  ## capture
@@ -227,7 +259,7 @@ class Engine:
         ## queen moves
         if abs(piece) == 9:
             direction = [(1, 0), (-1, 0), (0, -1), (0, 1), (1,1),(-1,1),(1,-1),(-1,-1)]
-            is_white = self.is_white_piece(x, y)
+            is_white = self.is_white_piece(x, y, board)
 
             for dx, dy in direction:
                 for k in range(1, SIZE):
@@ -236,30 +268,74 @@ class Engine:
                     move = (x, y, x_move, y_move)
                     if not (x_move >= 0 and y_move >= 0 and x_move < SIZE and y_move < SIZE):
                         continue
-                    if self.board[y_move][x_move] != 0:  ## if there is a piece
-                        if self.is_white_piece(x_move, y_move) == is_white:  ## if the piece is the same color
+                    if board[y_move][x_move] != 0:  ## if there is a piece
+                        if self.is_white_piece(x_move, y_move, board) == is_white:  ## if the piece is the same color
                             break
                         else:
                             moves.append(move)  ## capture
                             break
                     moves.append(move)
 
+            # Handle king safety by checking if any moves put the king in check
+        if not checking:
+            print("Checking king safety")
+            copy_board = copy.deepcopy(self.board)
+            is_white = self.is_white_piece(x, y, board)
+            valid_moves = []  # Collect only the valid moves
+
+            for move in moves:
+                print(f"Trying move: {move}")
+
+                # Make the move on the copy of the board
+                piece = self.move_board(move[0], move[1], move[2], move[3], copy_board)
+
+                # Check if the move results in a check for the current player
+                if not self.is_check(is_white, copy_board):  # Valid if it doesn't put the king in check
+                    valid_moves.append(move)
+                else:
+                    print(f"Move {move} puts king in check, discarding")
+
+                # # Undo the move to restore the original board state
+                self.undo_move_board(move[0], move[1], move[2], move[3], copy_board, piece)
+
+                print(f"Restored board state after move: {copy_board}")
+
+            print(f"Valid moves: {valid_moves}")
+            return valid_moves
+
         return moves
 
+    def move_board(self, start_x, start_y, end_x, end_y, board):
+        # srpawdzic czy to moze roszada albo promocja pionka
+        # Save the state of the pieces involved in the move
+        piece_from = self.get_figure(start_x, start_y, board)
+        piece_to = self.get_figure(end_x, end_y, board)
+        if piece_from != 0:
+            board[end_y][end_x] = piece_from
+            board[start_y][start_x] = 0
 
+        return piece_to
 
+    def undo_move_board(self, start_x, start_y, end_x, end_y, board, piece):
+        # srpawdzic czy to moze roszada albo promocja pionka
+        # Save the state of the pieces involved in the move
+        piece_from = self.get_figure(end_x, end_y, board)
+        if piece_from != 0:
+            board[start_y][start_x] = piece_from
+            board[end_y][end_x] = piece
 
-    def is_white_piece(self, x, y):
-        piece = self.get_figure(x, y)
+    def is_white_piece(self, x, y, board):
+        piece = self.get_figure(x, y, board)
 
         # Check if the piece is owned by the current player
         if piece > 0 :  return True
         elif piece < 0 : return False
         return None
 
-    def get_figure(self, x, y):
+    def get_figure(self, x, y, board):
         if x == None or y == None or x >= SIZE or y >= SIZE:
             return None
 
-        figure = self.board[y][x]
+        figure = board[y][x]
         return figure
+

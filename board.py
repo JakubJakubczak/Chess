@@ -72,7 +72,6 @@ class Board:
         if piece!= 0:
             self.board[end_y][end_x] = piece
             self.board[start_y][start_x] = 0
-        pass
 
     def castling(self, color):
         pass
