@@ -10,29 +10,30 @@ class Engine:
             board = self.board
 
         king_position = self.king_position(for_white, board)
-        print("king position" + str(king_position))
         all_moves = self.all_valid_moves(not for_white, True, board)
         length = len(all_moves)
 
         for i in range(length):
             move = all_moves[i]
             if move[2] == king_position[0] and move[3] == king_position[1]:
-                print("CHECK")
                 return True
 
         return False
 
 
-    def is_checkmate(self, board = None):
+    def checkmate(self, board = None):
         if board is None:
             board = self.board
 
-        is_white_winner = None
+        white = True
+        black = False
 
-        if self.is_check(True, board) and self.valid_moves(False, board) == []:
+        if self.is_check(white, board) and self.all_valid_moves(white, False, board) == []:
+            is_white_winner = False
             return is_white_winner
-        if self.is_check(False, board) and self.valid_moves(True, board) == []:
-            return not is_white_winner
+        if self.is_check(black, board) and self.all_valid_moves(black, False, board) == []:
+            is_white_winner = True
+            return is_white_winner
 
         return None
 
@@ -40,17 +41,29 @@ class Engine:
         if board is None:
             board = self.board
 
-        is_draw = False
-
         ## check if it will generate bugs, probalby turns required
-        if self.valid_moves(True, board) == [] and not self.is_check(False, board):
-            is_draw = True
-        if self.valid_moves(False, board) == [] and not self.is_check(True, board):
-            is_draw = True
+        if self.all_valid_moves(True, False, board) == [] and not self.is_check(True, board):
+            return True
+        if self.all_valid_moves(False,False, board) == [] and not self.is_check(False, board):
+            return True
 
-        return is_draw
+        return False
+    def draw(self):
+        pass
 
-
+    def game_over(self):
+        print("game_over")
+        checkmate = self.checkmate()
+        if checkmate == True:
+            return 1
+        if checkmate == False:
+            return -1
+        elif self.is_stalemate():
+            return 0
+        elif self.draw():
+            return 0
+        else:
+            return None
     def is_threefold_repetition(self):
         pass
 
@@ -60,14 +73,26 @@ class Engine:
     def is_insufficient_material(self):
         pass
 
+    def is_legal_en_passant(self, x_start, y_start, x_end, y_end):
+        pass
+
     def is_pawn_promotion(self, x_start, y_start, x_end, y_end):
         pass
 
     def is_castling_possible(self, x_start, y_start, x_end, y_end):
         pass
 
-    def is_legal_en_passant(self, x_start, y_start, x_end, y_end):
-        pass
+    def is_square_attacked(self, for_white, x, y, board):
+        all_moves = self.all_valid_moves(not for_white, False, board)
+
+        for move in all_moves:
+            if move[2] == x and move[3] == y:
+                return True
+
+        return False
+
+
+
 
     ## it should be called always after checking if move is valid
     def is_it_capture(self, x_end, y_end, board = None):
@@ -120,7 +145,7 @@ class Engine:
                 if board[k][i] == 0:
                     continue
 
-                if for_white and not self.is_white_piece(i, k, board):
+                if for_white != self.is_white_piece(i, k, board):
                     continue
 
                 moves = self.valid_moves(i, k, checking, board)
@@ -141,18 +166,20 @@ class Engine:
         if piece is None:
             return moves
 
+        if x < 0 and y < 0 or x >= SIZE or y >= SIZE:
+            return moves
         ## pawn moves
         # check if in check or bound
         if abs(piece) == 1:
 
             # vertical for white pawn
-            if piece == 1 and y < SIZE - 1 and board[y - 1][x] == 0:
+            if piece == 1 and y > 0 and board[y - 1][x] == 0:
                 moves.append((x, y, x, y - 1))
                 if y == 6 and board[y - 2][x] == 0:
                     moves.append((x, y, x, y - 2))
 
             # vertical for black pawn
-            if piece == -1 and y > 0 and board[y + 1][x] == 0:
+            if piece == -1 and y + 1 < SIZE and board[y + 1][x] == 0:
                 moves.append((x, y, x, y + 1))
                 if y == 1 and board[y + 2][x] == 0:
                     moves.append((x, y, x, y + 2))
@@ -237,7 +264,6 @@ class Engine:
 
         ## king moves
         # add castling
-        # check if opposite king is nearby
         if abs(piece) == 2:
             direction = [(1, 0), (-1, 0), (0, -1), (0, 1), (1,1),(-1,1),(1,-1),(-1,-1)]
             is_white = self.is_white_piece(x, y, board)
@@ -278,13 +304,11 @@ class Engine:
 
             # Handle king safety by checking if any moves put the king in check
         if not checking:
-            print("Checking king safety")
             copy_board = copy.deepcopy(self.board)
             is_white = self.is_white_piece(x, y, board)
             valid_moves = []  # Collect only the valid moves
 
             for move in moves:
-                print(f"Trying move: {move}")
 
                 # Make the move on the copy of the board
                 piece = self.move_board(move[0], move[1], move[2], move[3], copy_board)
@@ -292,15 +316,9 @@ class Engine:
                 # Check if the move results in a check for the current player
                 if not self.is_check(is_white, copy_board):  # Valid if it doesn't put the king in check
                     valid_moves.append(move)
-                else:
-                    print(f"Move {move} puts king in check, discarding")
-
                 # # Undo the move to restore the original board state
                 self.undo_move_board(move[0], move[1], move[2], move[3], copy_board, piece)
 
-                print(f"Restored board state after move: {copy_board}")
-
-            print(f"Valid moves: {valid_moves}")
             return valid_moves
 
         return moves

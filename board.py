@@ -12,7 +12,7 @@ from engine import *
 ## PAWN - 1
 
 class Board:
-    def __init__(self, frame):
+    def __init__(self, frame, game):
         self.game_on = True
         self.white_turn = True
         self.history = [] # historia jest w formacie PGN
@@ -20,6 +20,9 @@ class Board:
         self.threefold_repetition = 0
         self.fifty_move_rule = 0
 
+        self.info = []
+
+        self.game = game
         self.frame = frame
         self.canvas_board = Canvas(self.frame, width=BOARD_WIDTH, height=BOARD_HEIGHT)
         self.canvas_label1 = Canvas(self.frame, width=LABEL_VERTUCAL_WIDTH, height=LABEL_VERTICAL_HEIGHT)
@@ -73,6 +76,8 @@ class Board:
             self.board[end_y][end_x] = piece
             self.board[start_y][start_x] = 0
 
+        self.check_game_state()
+
     def castling(self, color):
         pass
 
@@ -92,12 +97,27 @@ class Board:
 
 
     def is_Game_On(self):
-        if self.game_on:
+        print("is_game_on")
+        if self.engine.game_over() == None:
             return True
+
         else:
+            self.game_on = False
+            self.result = self.engine.game_over()
             return False
+
+
     def is_white_turn(self):
         if self.white_turn:
             return True
         else:
             return False
+
+    def get_result(self):
+        return self.result  # Return the result (could be checkmate, stalemate, etc.)
+
+    def check_game_state(self):
+        print("check_game_state")
+        # Check the game state in the Board class and inform the Game class
+        if not self.is_Game_On():
+            self.game.handle_game_end()

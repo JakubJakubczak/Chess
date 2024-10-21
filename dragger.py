@@ -25,13 +25,12 @@ class Dragger:
 
 
     def drag_start(self, event):
-        print("drag_start")
         x,y = self.calculate_board_position(event.x, event.y)
-        print(f"valid moves {self.board.engine.valid_moves(x, y)}")
-        print(f"x: {x}, y: {y}")
-        print(self.board.engine.is_white_piece(x,y, self.board.board))
-        print(self.board.white_turn)
-        print(self.board.board)
+        # print(f"valid moves {self.board.engine.valid_moves(x, y)}")
+        # print(f"x: {x}, y: {y}")
+        # print(self.board.engine.is_white_piece(x,y, self.board.board))
+        # print(self.board.white_turn)
+        # print(self.board.board)
         if self.board.engine.is_white_piece(x, y,self.board.board) == self.board.white_turn:
             self.drag_data["item"] = self.figures.canvas_images[y][x]
 
@@ -47,7 +46,7 @@ class Dragger:
             delta_y = y - event.y
             self.initial_position = {'x': x, 'y': y, 'item': self.drag_data["item"]}
             self.canvas.move(self.drag_data["item"], -delta_x, -delta_y)
-            print(self.board.board)
+            # print(self.board.board)
 
 
     def drag_motion(self, event):
@@ -80,20 +79,20 @@ class Dragger:
                 self.drag_data["item"] = None
                 return
 
-            print("Valid move, making move...  ")
+            # print("Valid move, making move...  ")
             if not self.board.engine.is_valid_move(x_start, y_start, x_end, y_end):
                 self.canvas.move(self.drag_data["item"], -delta_x, -delta_y)
                 self.drag_data["item"] = None
                 return
 
 
-            self.board.move(x_start, y_start, x_end, y_end)
             self.board.white_turn = not self.board.white_turn
             self.figures.move_images(self.drag_data, x_start, y_start, x_end, y_end)
+            self.board.move(x_start, y_start, x_end, y_end)
 
-            # self.board.engine.is_check(self.board.white_turn)
 
-            print(self.board.board)
+
+            # print(self.board.board)
             self.drag_data["item"] = None
 
 
