@@ -40,7 +40,6 @@ class Figures:
             item_del = self.canvas_images[y_end][x_end]
             self.board.canvas_board.delete(item_del)
 
-        ## castling to do
 
         ## centrowanie figury po przeniesieniu
 
@@ -56,6 +55,28 @@ class Figures:
         self.board.canvas_board.move(item, -delta_center_x, -delta_center_y)
         self.canvas_images[y_start][x_start] = None
         self.canvas_images[y_end][x_end] = item
+
+        if self.board.engine.is_castling(x_start, y_start, x_end, y_end, self.board.board):
+            if self.board.engine.is_left_castling(x_start, x_end):
+                # znalezc wieze
+                item = self.canvas_images[y_start][0]
+                # wyliczyc coordy i przeniesc ja w odpowiednie miejsce
+                square_transported = 3
+                delta_x =  square_transported * SPACE_SIZE
+                self.board.canvas_board.move(item, delta_x, 0)
+                # zmienić canvas_images
+                self.canvas_images[y_start][3] = item
+                self.canvas_images[y_start][0] = None
+            if not self.board.engine.is_left_castling(x_start, x_end):
+                # znalezc wieze
+                item = self.canvas_images[y_start][7]
+                # wyliczyc coordy i przeniesc ja w odpowiednie miejsce
+                square_transported = 2
+                delta_x = square_transported * SPACE_SIZE
+                self.board.canvas_board.move(item, -delta_x, 0)
+                # zmienić canvas_images
+                self.canvas_images[y_start][5] = item
+                self.canvas_images[y_start][7] = None
 
     def calculate_image_dimensions(self, image):
         return [image.width(),image.height()]

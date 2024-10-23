@@ -2,8 +2,9 @@ from Const import *
 import copy
 
 class Engine:
-    def __init__(self, board):
+    def __init__(self, board, info):
         self.board = board
+        self.info = info
 
     def is_check(self, for_white, board = None):
         if board is None:
@@ -79,8 +80,6 @@ class Engine:
     def is_pawn_promotion(self, x_start, y_start, x_end, y_end):
         pass
 
-    def is_castling_possible(self, x_start, y_start, x_end, y_end):
-        pass
 
     def is_square_attacked(self, for_white, x, y, board):
         all_moves = self.all_valid_moves(not for_white, False, board)
@@ -91,6 +90,74 @@ class Engine:
 
         return False
 
+    def queen_castling_rights(self, for_white):
+        if for_white:
+            return self.info[0]
+        else:
+            return self.info[2]
+
+    def king_castling_rights(self,for_white):
+        if for_white:
+            return self.info[1]
+        else:
+            return self.info[3]
+
+    def change_queen_castling_rights(self,for_white, change):
+        if for_white:
+            self.info[0] = change
+        else:
+            self.info[2] = change
+
+    def change_king_castling_rights(self, for_white, change):
+        if for_white:
+            self.info[1] = change
+        else:
+            self.info[3] = change
+
+    def is_left_rook_moved_or_captured(self, for_white):
+        pass
+
+    def is_right_rook_moved_or_captured(self, for_white):
+        pass
+
+    def is_king_moved(self, for_white):
+        pass
+
+    def is_queen_castling_possible(self, for_white, board, row):
+        # 1: brak checka na króla
+        # 2: między królem a wiezą jest pusto
+        # 3: brak atakowania pól przez, które przechodzi król
+        if not self.is_check(for_white, board) and \
+            board[row][1] == 0 and board[row][2] == 0 and board[row][3] == 0 and \
+            not self.is_square_attacked(for_white, 2, row, board) and not self.is_square_attacked(for_white, 3, row, board):
+
+            return True
+
+        return False
+
+    def is_king_castling_possible(self, for_white, board, row):
+        # 1: brak checka na króla
+        # 2: między królem a wiezą jest pusto
+        # 3: brak atakowania pól przez, które przechodzi król
+        if not self.is_check(for_white, board) and \
+                board[row][5] == 0 and board[row][6] == 0 and \
+                not self.is_square_attacked(for_white, 5, row, board) and not self.is_square_attacked(for_white, 6, row,
+                                                                                                      board):
+            return True
+
+        return False
+    def is_castling(self, x_start, y_start, x_end, y_end, board):
+        if abs(self.get_figure(x_start, y_start, board)) == 2: # jest to król
+            if abs(x_start - x_end) == 2:   # ruch o 2 pola to roszada
+                return True
+
+        return False
+
+    def is_left_castling(self, x_start, x_end):
+        if x_start > x_end:
+            return True
+        else:
+            return False
 
 
 
@@ -282,6 +349,25 @@ class Engine:
                         continue
                 moves.append(move)
 
+
+            if not checking:
+                if is_white:
+                    row = 7
+                else:
+                    row = 0
+
+                if self.queen_castling_rights(is_white):
+                    if self.is_queen_castling_possible(is_white, board, row):
+                        moves.append((x, y, 2, row))
+
+
+                if self.king_castling_rights(is_white):
+                    if self.is_king_castling_possible(is_white, board, row):
+                        moves.append((x, y, 6, row))
+
+
+
+
         ## queen moves
         if abs(piece) == 9:
             direction = [(1, 0), (-1, 0), (0, -1), (0, 1), (1,1),(-1,1),(1,-1),(-1,-1)]
@@ -305,42 +391,125 @@ class Engine:
             # Handle king safety by checking if any moves put the king in check
         if not checking:
             copy_board = copy.deepcopy(self.board)
+            copy_info = copy.deepcopy(self.info)
             is_white = self.is_white_piece(x, y, board)
             valid_moves = []  # Collect only the valid moves
+
+            new_engine = Engine(copy_board, copy_info)
 
             for move in moves:
 
                 # Make the move on the copy of the board
-                piece = self.move_board(move[0], move[1], move[2], move[3], copy_board)
+                piece,is_white,changes = new_engine.move_board(move[0], move[1], move[2], move[3], copy_board)
 
                 # Check if the move results in a check for the current player
-                if not self.is_check(is_white, copy_board):  # Valid if it doesn't put the king in check
+                if not new_engine.is_check(is_white, copy_board):  # Valid if it doesn't put the king in check
                     valid_moves.append(move)
                 # # Undo the move to restore the original board state
-                self.undo_move_board(move[0], move[1], move[2], move[3], copy_board, piece)
+                new_engine.undo_move_board(move[0], move[1], move[2], move[3], copy_board, piece, is_white, changes)
 
             return valid_moves
 
         return moves
 
     def move_board(self, start_x, start_y, end_x, end_y, board):
-        # srpawdzic czy to moze roszada albo promocja pionka
-        # Save the state of the pieces involved in the move
+        is_white = self.is_white_piece(start_x, start_y, board)
         piece_from = self.get_figure(start_x, start_y, board)
         piece_to = self.get_figure(end_x, end_y, board)
-        if piece_from != 0:
-            board[end_y][end_x] = piece_from
-            board[start_y][start_x] = 0
 
-        return piece_to
+        color = 1 if is_white else -1
 
-    def undo_move_board(self, start_x, start_y, end_x, end_y, board, piece):
-        # srpawdzic czy to moze roszada albo promocja pionka
-        # Save the state of the pieces involved in the move
-        piece_from = self.get_figure(end_x, end_y, board)
-        if piece_from != 0:
-            board[start_y][start_x] = piece_from
-            board[end_y][end_x] = piece
+        # sprawdzić czy to roszada
+        if self.is_castling(start_x, start_y, end_x, end_y, board):
+            if start_x - end_x == 2:  # Castling long
+                self.board[start_y][2] = 2 * color
+                self.board[start_y][4] = 0
+                self.board[start_y][3] = 5 * color
+                self.board[start_y][0] = 0
+            elif start_x - end_x == -2:  # Castling short
+                self.board[start_y][6] = 2 * color
+                self.board[start_y][4] = 0
+                self.board[start_y][5] = 5 * color
+                self.board[start_y][7] = 0
+
+        else:
+            if piece_from != 0:
+                board[end_y][end_x] = piece_from
+                board[start_y][start_x] = 0
+
+        ## PARWN PROMOTION
+
+        ## EN_PASSANT
+
+        # [queen_castling_rigths, king_castling_rigths]
+        changes = [False, False]
+
+        # sprawdzić czy to ruch królem lub którąś z wież lub czy wieża jest zbita
+        if abs(piece_from) == 2:
+
+
+            if self.queen_castling_rights(is_white):
+                self.change_queen_castling_rights(is_white, False)
+                changes[0] = True  # change of rigths for castling to enable undo_move
+
+            if self.king_castling_rights(is_white):
+                self.change_king_castling_rights(is_white, False)
+                changes[1] = True
+
+
+                # ruch wieżą
+        if abs(piece_from) == 5:
+            if start_x == 0: # left_rook
+                if self.queen_castling_rights(is_white):
+                    self.change_queen_castling_rights(is_white, False)
+                    changes[0] = True
+            if start_x == 7: # right_rook
+                if self.king_castling_rights(is_white):
+                    self.change_king_castling_rights(is_white, False)
+                    changes[1] = True
+
+        # zbicie wieży przez przeciwnika
+        if abs(piece_to) == 5:
+            if end_x == 0:
+                if self.queen_castling_rights(is_white):
+                    self.change_queen_castling_rights(is_white, False)
+                    changes[0] = True
+            if end_x == 7:
+                if self.king_castling_rights(is_white):
+                    self.change_king_castling_rights(is_white, False)
+                    changes[1] = True
+
+
+
+        ## SAVE TO HISTORY
+
+        return piece_to, is_white, changes
+
+    def undo_move_board(self, start_x, start_y, end_x, end_y, board, piece, is_white,changes):
+        ## UNDO ALL THAT HAPPANED IN MOVE, for example castling rights
+        if changes[0]:
+            self.change_queen_castling_rights(is_white, True)
+        if changes[1]:
+            self.change_king_castling_rights(is_white, True)
+
+        color = 1 if is_white else -1
+
+        if self.is_castling(start_x, start_y, end_x, end_y, board):
+            if start_x - end_x == 2:  # Castling long
+                self.board[start_y][0] = 5 * color
+                self.board[start_y][2] = 0
+                self.board[start_y][3] = 0
+                self.board[start_y][4] = 2  * color
+            elif start_x - end_x == -2:  # Castling short
+                self.board[start_y][4] = 2  * color
+                self.board[start_y][5] = 0
+                self.board[start_y][6] = 0
+                self.board[start_y][7] = 5  * color
+        else:
+            piece_from = self.get_figure(end_x, end_y, board)
+            if piece_from != 0:
+                board[start_y][start_x] = piece_from
+                board[end_y][end_x] = piece
 
     def is_white_piece(self, x, y, board):
         piece = self.get_figure(x, y, board)

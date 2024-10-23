@@ -1,3 +1,4 @@
+import board
 from Const import *
 class Dragger:
     def __init__(self, figures, canvas, board):
@@ -25,20 +26,21 @@ class Dragger:
 
 
     def drag_start(self, event):
-        x,y = self.calculate_board_position(event.x, event.y)
+        self.board.dehighlight_valid_moves()
+        x_board,y_board = self.calculate_board_position(event.x, event.y)
         # print(f"valid moves {self.board.engine.valid_moves(x, y)}")
         # print(f"x: {x}, y: {y}")
         # print(self.board.engine.is_white_piece(x,y, self.board.board))
         # print(self.board.white_turn)
         # print(self.board.board)
-        if self.board.engine.is_white_piece(x, y,self.board.board) == self.board.white_turn:
-            self.drag_data["item"] = self.figures.canvas_images[y][x]
+        if self.board.engine.is_white_piece(x_board, y_board,self.board.board) == self.board.white_turn:
+            self.drag_data["item"] = self.figures.canvas_images[y_board][x_board]
 
         if self.drag_data["item"]:
             self.drag_data["x"] = event.x
             self.drag_data["y"] = event.y
-            self.initial_index = [x, y]
-            self.figure = self.board.engine.get_figure(x, y, self.board.board)
+            self.initial_index = [x_board, y_board]
+            self.figure = self.board.engine.get_figure(x_board, y_board, self.board.board)
 
             # centrowanie figury po kliknięciu
             x, y = self.canvas.coords(self.drag_data["item"])
@@ -47,6 +49,9 @@ class Dragger:
             self.initial_position = {'x': x, 'y': y, 'item': self.drag_data["item"]}
             self.canvas.move(self.drag_data["item"], -delta_x, -delta_y)
             # print(self.board.board)
+
+            valid_moves = self.board.engine.valid_moves(x_board, y_board)
+            self.board.highlight_valid_moves(valid_moves)
 
 
     def drag_motion(self, event):
@@ -88,7 +93,12 @@ class Dragger:
 
             self.board.white_turn = not self.board.white_turn
             self.figures.move_images(self.drag_data, x_start, y_start, x_end, y_end)
-            self.board.move(x_start, y_start, x_end, y_end)
+            self.board.engine.move_board(x_start, y_start, x_end, y_end, self.board.board)
+            self.board.check_game_state()
+
+            self.board.dehighlight_valid_moves()
+            self.board.dehighlight_last_move()
+            self.board.highlight_move(x_start, y_start, x_end, y_end)
 
 
 
