@@ -25,6 +25,7 @@ class Figures:
        first_cordinates = self.calculate_first_cordinates()
        self.display_figures(first_cordinates, board.canvas_board, board.board) # list
        self.bind_figures(board.canvas_board)
+       self.promotion = None
 
     def load_canvas_images(self, board):
         for i in range(SIZE):
@@ -56,7 +57,7 @@ class Figures:
         self.canvas_images[y_start][x_start] = None
         self.canvas_images[y_end][x_end] = item
 
-        if self.board.engine.is_castling(x_start, y_start, x_end, y_end, self.board.board):
+        if self.board.engine.is_castling(x_start, y_start, x_end, y_end):
             if self.board.engine.is_left_castling(x_start, x_end):
                 # znalezc wieze
                 item = self.canvas_images[y_start][0]
@@ -78,6 +79,55 @@ class Figures:
                 self.canvas_images[y_start][5] = item
                 self.canvas_images[y_start][7] = None
 
+        if self.is_pawn_promoted():
+            self.promote()
+
+    def is_pawn_promoted(self):
+        print(f"before")
+        for i in range(SIZE):
+            item_tag1 = None
+            item_tag2 = None
+
+            if not self.canvas_images[0][i] == None:
+                item_tag1 = self.board.canvas_board.gettags(self.canvas_images[0][i])
+                if item_tag1[1] == '6':
+                    value = self.board.board[0][i]
+                    self.promotion = (i, 0, value)
+                    return True
+
+            if not self.canvas_images[7][i] == None:
+                item_tag2 = self.board.canvas_board.gettags(self.canvas_images[7][i])
+                if item_tag2[1] == '1':
+                    value = self.board.board[7][i]
+                    self.promotion = (i, 7, value)
+                    return True
+
+            print(f"tags: {item_tag1}, {item_tag2}")
+
+        self.promotion = None
+
+        return False
+
+    def promote(self):
+        image_dict = {3: 1, 4: 2, 5: 0, 9: 3}
+        promotion = self.promotion
+        value = self.promotion[2]
+        image = None
+        x = promotion[0]
+        y = promotion[1]
+
+        if promotion[1] == 0:
+            image = self.images[7][image_dict[value]]
+
+        if promotion[1] == 7:
+            image = self.images[0][image_dict[abs(value)]]
+
+        print(f"promotion value{image_dict[abs(value)]}  ")
+        self.board.canvas_board.itemconfig(self.canvas_images[y][x], image=image)
+
+
+
+
     def calculate_image_dimensions(self, image):
         return [image.width(),image.height()]
 
@@ -88,10 +138,12 @@ class Figures:
 
     def display_figures(self, first_cordinates, canvas, board):
         ##### dict that will store position and figure
+
         for i in range(SIZE):
             for j in range(SIZE):
                 if board[i][j] != 0:
-                    self.canvas_images[i][j] = canvas.create_image(first_cordinates[0] + (j * SPACE_SIZE), first_cordinates[1] + (i * SPACE_SIZE), image=self.images[i][j])
+                    tag = (j, i)  # Example tag based on position
+                    self.canvas_images[i][j] = canvas.create_image(first_cordinates[0] + (j * SPACE_SIZE), first_cordinates[1] + (i * SPACE_SIZE), image=self.images[i][j], tags= tag)
                     # Bring piece image to the top to ensure it is above the board
                     canvas.tag_raise(self.canvas_images[i][j])
 

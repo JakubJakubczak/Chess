@@ -25,7 +25,9 @@ class Board:
         self.black_king_castling_right = True
 
         # dodać o en_passant też pewnie
-        self.info = [self.white_queen_castling_right, self.white_king_castling_right, self.black_queen_castling_right, self.black_king_castling_right]
+        move = None
+        last_move = None
+        self.info = [self.white_queen_castling_right, self.white_king_castling_right, self.black_queen_castling_right, self.black_king_castling_right,  last_move, move]
 
         self.game = game
         self.frame = frame
@@ -98,7 +100,6 @@ class Board:
 
 
     def is_Game_On(self):
-        print("is_game_on")
         if self.engine.game_over() == None:
             return True
 
@@ -118,7 +119,6 @@ class Board:
         return self.result  # Return the result (could be checkmate, stalemate, etc.)
 
     def check_game_state(self):
-        print("check_game_state")
         # Check the game state in the Board class and inform the Game class
         if not self.is_Game_On():
             self.game.handle_game_end()
@@ -143,8 +143,18 @@ class Board:
                     self.squares_highlighted[row][col] = False
         pass
 
-    def highlight_move(self, x_start, y_start, x_end, y_end):
+    def highlight_move(self):
+        move = self.info[5]
+
+        if move != None:
+            self.change_color_of_square(move[0], move[1], "blue")
+            self.change_color_of_square(move[2], move[3], "yellow")
         pass
 
     def dehighlight_last_move(self):
+        last_move = self.info[4]
+
+        if last_move != None:
+            self.change_color_of_square(last_move[0], last_move[1], SQUARES_COLORS[(last_move[0] + last_move[1] )% 2])
+            self.change_color_of_square(last_move[2], last_move[3], SQUARES_COLORS[(last_move[2] + last_move[3])% 2])
         pass

@@ -9,7 +9,6 @@ class Game:
     def __init__(self):
         self.game_window = Tk()
         self.game_window.title("GAME")
-        # self.game_window.geometry('850x750')
         self.game_window.resizable(False, False)
         self.frame = Frame(self.game_window, width=GAME_WIDTH, height=GAME_HEIGHT)
         self.frame.pack()

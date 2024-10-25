@@ -10,11 +10,6 @@ class Dragger:
         self.initial_index = [None,None]
         self.figure = 0
 
-    # ustalic pozycje na boardzie za pomocą położenia myszy
-    # ustalic jaka to figura na podstawie boarda
-    # zmiana boarda
-    # walidacja
-    # drag stop
     def calculate_board_position(self, x ,y):
        if x < 0 or y < 0 or x >= BOARD_WIDTH or y >= BOARD_HEIGHT:
            return None,None
@@ -24,23 +19,18 @@ class Dragger:
 
        return x_index,y_index
 
-
     def drag_start(self, event):
         self.board.dehighlight_valid_moves()
         x_board,y_board = self.calculate_board_position(event.x, event.y)
-        # print(f"valid moves {self.board.engine.valid_moves(x, y)}")
-        # print(f"x: {x}, y: {y}")
-        # print(self.board.engine.is_white_piece(x,y, self.board.board))
-        # print(self.board.white_turn)
-        # print(self.board.board)
-        if self.board.engine.is_white_piece(x_board, y_board,self.board.board) == self.board.white_turn:
+
+        if self.board.engine.is_white_piece(x_board, y_board) == self.board.white_turn:
             self.drag_data["item"] = self.figures.canvas_images[y_board][x_board]
 
         if self.drag_data["item"]:
             self.drag_data["x"] = event.x
             self.drag_data["y"] = event.y
             self.initial_index = [x_board, y_board]
-            self.figure = self.board.engine.get_figure(x_board, y_board, self.board.board)
+            self.figure = self.board.engine.get_figure(x_board, y_board)
 
             # centrowanie figury po kliknięciu
             x, y = self.canvas.coords(self.drag_data["item"])
@@ -48,14 +38,12 @@ class Dragger:
             delta_y = y - event.y
             self.initial_position = {'x': x, 'y': y, 'item': self.drag_data["item"]}
             self.canvas.move(self.drag_data["item"], -delta_x, -delta_y)
-            # print(self.board.board)
 
             valid_moves = self.board.engine.valid_moves(x_board, y_board)
             self.board.highlight_valid_moves(valid_moves)
 
 
     def drag_motion(self, event):
-        # print("drag_motion")
         if self.drag_data["item"] is not None:
             ## compute how much the mouse has moved
             delta_x = event.x - self.drag_data["x"]
@@ -67,14 +55,12 @@ class Dragger:
             self.drag_data["y"] = event.y
 
     def drag_stop(self, event):
-        # print("drag_stop")
         if self.drag_data["item"] is not None:
             x_start, y_start = self.calculate_board_position(self.initial_position["x"], self.initial_position["y"])
             delta_x = self.drag_data["x"] - self.initial_position["x"]
             delta_y = self.drag_data["y"] - self.initial_position["y"]
             x_end, y_end = self.calculate_board_position(self.drag_data["x"], self.drag_data["y"])
             if x_end is None or y_end is None:
-                ## change it to one function in figures class
                 self.canvas.move(self.drag_data["item"], -delta_x, -delta_y)
                 self.drag_data["item"] = None
                 return
@@ -84,7 +70,6 @@ class Dragger:
                 self.drag_data["item"] = None
                 return
 
-            # print("Valid move, making move...  ")
             if not self.board.engine.is_valid_move(x_start, y_start, x_end, y_end):
                 self.canvas.move(self.drag_data["item"], -delta_x, -delta_y)
                 self.drag_data["item"] = None
@@ -92,17 +77,15 @@ class Dragger:
 
 
             self.board.white_turn = not self.board.white_turn
+            self.board.engine.move_board(x_start, y_start, x_end, y_end)
             self.figures.move_images(self.drag_data, x_start, y_start, x_end, y_end)
-            self.board.engine.move_board(x_start, y_start, x_end, y_end, self.board.board)
             self.board.check_game_state()
 
             self.board.dehighlight_valid_moves()
             self.board.dehighlight_last_move()
-            self.board.highlight_move(x_start, y_start, x_end, y_end)
+            self.board.highlight_move()
 
-
-
-            # print(self.board.board)
+            print(self.board.board)
             self.drag_data["item"] = None
 
 
