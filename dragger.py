@@ -78,9 +78,14 @@ class Dragger:
 
             self.board.white_turn = not self.board.white_turn
             self.board.engine.move_board(x_start, y_start, x_end, y_end)
+            if self.board.engine.is_pawn_promotion(x_end, y_end, x_end, y_end):
+                print("promotion")
+                value = self.board.choose_piece()
+                print(f"value {value}")
+                self.board.engine.promote(x_end, y_end, value)
             self.figures.move_images(self.drag_data, x_start, y_start, x_end, y_end)
             self.board.check_game_state()
-
+            print(f"move {self.board.info[5]}")
             self.board.dehighlight_valid_moves()
             self.board.dehighlight_last_move()
             self.board.highlight_move()

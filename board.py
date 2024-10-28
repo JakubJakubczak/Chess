@@ -27,7 +27,10 @@ class Board:
         # dodać o en_passant też pewnie
         move = None
         last_move = None
-        self.info = [self.white_queen_castling_right, self.white_king_castling_right, self.black_queen_castling_right, self.black_king_castling_right,  last_move, move]
+        promotion = False
+        enpassant = None
+        self.promotion_choice = None
+        self.info = [self.white_queen_castling_right, self.white_king_castling_right, self.black_queen_castling_right, self.black_king_castling_right,  last_move, move, promotion, enpassant]
 
         self.game = game
         self.frame = frame
@@ -56,6 +59,7 @@ class Board:
 
 
         self.engine = Engine(self.board, self.info)
+
 
     def display_board(self):
         for row in range(0, SIZE):
@@ -87,6 +91,47 @@ class Board:
     def pawn_promotion(self, x_start, y_start, x_end, y_end):
         pass
 
+    def choose_piece(self):
+        # print("Enter what you want to promote")
+        # x = input()
+        #
+        # if x == "q" or "Q":
+        #     return 9
+        #
+        # if x == "r" or "R":
+        #     return 5
+        #
+        # if x == "b" or "B":
+        #     return 4
+        #
+        # if x == "n" or "N":
+        #     return 3
+        #
+        # return 9
+        popup = Toplevel(self.frame)
+        popup.title("Choose Piece for Promotion")
+        popup.geometry("300x200")
+        popup.transient(self.frame)  # Keeps it on top of the main window
+
+        label = Label(popup, text="Enter what you want to promote to:")
+        label.pack(pady=10)
+
+        self.promotion_choice = None
+        def set_piece(value):
+            self.promotion_choice = value
+            popup.destroy()
+
+        # Buttons for each piece
+        Button(popup, text="Queen (Q)", command=lambda: set_piece(9)).pack(pady=5)
+        Button(popup, text="Rook (R)", command=lambda: set_piece(5)).pack(pady=5)
+        Button(popup, text="Bishop (B)", command=lambda: set_piece(4)).pack(pady=5)
+        Button(popup, text="Knight (N)", command=lambda: set_piece(3)).pack(pady=5)
+
+        # Pause the program until the popup window is closed
+        popup.wait_window()
+
+        # Return the selected piece value
+        return self.promotion_choice
     def move_pgn(self, string):
         pass
 

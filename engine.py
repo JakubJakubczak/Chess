@@ -59,10 +59,48 @@ class Engine:
     def is_insufficient_material(self):
         pass
 
-    def is_legal_en_passant(self, x_start, y_start, x_end, y_end):
-        pass
+    def is_square_empty(self,x, y):
+        if self.board[y][x] == 0:
+            return True
+
+        return False
+    def is_pawn_move_of_2_sqr(self, x_start, y_start, x_end, y_end):
+        piece = self.get_figure(x_end, y_end)
+        if abs(piece) != 1:
+            return False
+
+        if abs(y_end - y_start) == 2:
+            return True
+
+        return False
+
+    def is_enpassanat_pawn_nearby(self, x_pawn, y_pawn, x_enpas, y_enpas):
+        if not y_enpas == y_pawn:
+            return False, None
+
+        if x_enpas == x_pawn - 1:
+            return True, -1
+
+        if x_enpas == x_pawn + 1:
+            return True, +1
+
+        return False, None
+
+    def is_enpassant(self, x_start, y_start, x_end, y_end, piece):
+        if abs(piece) != 1:
+            return False
+
+        if abs(x_end - x_start) == 0:
+            return False
+
+        if self.is_square_empty(x_end, y_end):
+            return True
+
+        return False
+
 
     def is_pawn_promotion(self, x_start, y_start, x_end, y_end):
+
         piece = self.get_figure(x_start, y_start)
         if not abs(piece) == 1:
             return False
@@ -72,23 +110,10 @@ class Engine:
 
         return False
 
-    def choose_piece(self):
-        # print("Enter what you want to promote")
-        # x = input()
-        #
-        # if x == "q":
-        #     return 9
-        #
-        # if x == "r":
-        #     return 5
-        #
-        # if x == "b":
-        #     return 4
-        #
-        # if x == "n":
-        #     return 3
+    def promote(self,x,y, piece):
+        color = 1 if self.is_white_piece(x,y) else -1
 
-        return 9
+        self.board[y][x] = piece * color
 
 
     def is_square_attacked(self, for_white, x, y):
@@ -233,6 +258,8 @@ class Engine:
         if x < 0 and y < 0 or x >= SIZE or y >= SIZE:
             return moves
 
+        color = 1 if self.is_white_piece(x,y) else -1
+
         ## pawn moves
         # check if in check or bound
         if abs(piece) == 1:
@@ -266,6 +293,14 @@ class Engine:
                 moves.append((x, y, x + 1, y + 1))
 
             ## EN PASSANT !
+            move = self.info[5]
+            # print(f"move {move}")
+            if move != None:
+                if self.is_pawn_move_of_2_sqr(move[0], move[1], move[2], move[3]):
+                    enpassant = self.is_enpassanat_pawn_nearby(x, y, move[2], move[3])
+                    if enpassant[0]:
+                        moves.append((x, y, x + enpassant[1], y - color))
+
 
         ## knight moves
 
@@ -396,13 +431,13 @@ class Engine:
             for move in moves:
 
                 # Make the move on the copy of the board
-                piece,is_white,changes = new_engine.move_board(move[0], move[1], move[2], move[3])
+                piece,is_white,changes, last2_move = new_engine.move_board(move[0], move[1], move[2], move[3])
 
                 # Check if the move results in a check for the current player
                 if not new_engine.is_check(is_white):  # Valid if it doesn't put the king in check
                     valid_moves.append(move)
                 # # Undo the move to restore the original board state
-                new_engine.undo_move_board(move[0], move[1], move[2], move[3], piece, is_white, changes)
+                new_engine.undo_move_board(move[0], move[1], move[2], move[3], piece, is_white, changes, last2_move)
 
             return valid_moves
 
@@ -414,6 +449,9 @@ class Engine:
         piece_to = self.get_figure(end_x, end_y)
 
         color = 1 if is_white else -1
+
+        self.info[6] = False # promotio n
+        self.info[7] = False # enpassant move
 
         # sprawdzić czy to roszada
         if self.is_castling(start_x, start_y, end_x, end_y):
@@ -429,10 +467,15 @@ class Engine:
                 self.board[start_y][7] = 0
 
         elif self.is_pawn_promotion(start_x, start_y, end_x, end_y):
-            piece = self.choose_piece()
-            self.board[end_y][end_x] = piece * color
+            self.info[6] = True
+            self.board[end_y][end_x] = piece_from
             self.board[start_y][start_x] = 0
 
+        elif self.is_enpassant(start_x, start_y, end_x, end_y, piece_from):
+            self.board[end_y][end_x] = piece_from
+            self.board[start_y][start_x] = 0
+            self.board[end_y + color][end_x] = 0
+            self.info[7] = True
         else:
             if piece_from != 0:
                 self.board[end_y][end_x] = piece_from
@@ -443,6 +486,7 @@ class Engine:
         # [queen_castling_rigths, king_castling_rigths]
         changes = [False, False]
 
+        last2_move = self.info[4]
         last_move = self.info[5] # now last move is previous move
         self.info[4] = last_move
         self.info[5] = (start_x, start_y, end_x, end_y)
@@ -486,14 +530,18 @@ class Engine:
 
         ## SAVE TO HISTORY
 
-        return piece_to, is_white, changes
+        return piece_to, is_white, changes, last2_move
 
-    def undo_move_board(self, start_x, start_y, end_x, end_y, piece, is_white,changes):
+    def undo_move_board(self, start_x, start_y, end_x, end_y, piece, is_white,changes, last2_move):
         ## UNDO ALL THAT HAPPANED IN MOVE, for example castling rights
         if changes[0]:
             self.change_queen_castling_rights(is_white, True)
         if changes[1]:
             self.change_king_castling_rights(is_white, True)
+
+        self.info[5] = self.info[4]
+        self.info[4] = last2_move
+
 
         color = 1 if is_white else -1
 
@@ -513,6 +561,8 @@ class Engine:
             if piece_from != 0:
                 self.board[start_y][start_x] = piece_from
                 self.board[end_y][end_x] = piece
+
+
 
     def is_white_piece(self, x, y):
         piece = self.get_figure(x, y)

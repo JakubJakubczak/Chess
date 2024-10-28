@@ -41,7 +41,8 @@ class Figures:
             item_del = self.canvas_images[y_end][x_end]
             self.board.canvas_board.delete(item_del)
 
-
+        color = 1 if self.board.engine.is_white_piece(x_end, y_end) else -1
+        # piece = self.board.engine.get_figure(x_end, y_end)
         ## centrowanie figury po przeniesieniu
 
         figure_coords_x, figure_coords_y = self.calculate_first_cordinates()
@@ -69,6 +70,7 @@ class Figures:
                 self.canvas_images[y_start][3] = item
                 self.canvas_images[y_start][0] = None
             if not self.board.engine.is_left_castling(x_start, x_end):
+                print("right-castling")
                 # znalezc wieze
                 item = self.canvas_images[y_start][7]
                 # wyliczyc coordy i przeniesc ja w odpowiednie miejsce
@@ -81,6 +83,12 @@ class Figures:
 
         if self.is_pawn_promoted():
             self.promote()
+
+        if self.board.info[7]:
+            print("move_images enpas")
+            item_del = self.canvas_images[y_end + color][x_end]
+            self.board.canvas_board.delete(item_del)
+            # self.canvas_images[y_end + color][x_end] = None
 
     def is_pawn_promoted(self):
         print(f"before")
@@ -102,7 +110,7 @@ class Figures:
                     self.promotion = (i, 7, value)
                     return True
 
-            print(f"tags: {item_tag1}, {item_tag2}")
+            # print(f"tags: {item_tag1}, {item_tag2}")
 
         self.promotion = None
 
