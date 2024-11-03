@@ -36,7 +36,10 @@ class Engine:
 
         return False
     def draw(self):
-        pass
+        if self.is_threefold_repetition() or self.is_fifty_move_rule() or self.is_insufficient_material():
+            return True
+
+        return False
 
     def game_over(self):
         checkmate = self.checkmate()
@@ -47,17 +50,85 @@ class Engine:
         elif self.is_stalemate():
             return 0
         elif self.draw():
+            print("draw")
             return 0
         else:
             return None
     def is_threefold_repetition(self):
+        # jeżeli 3 razy obie strony wykonały tą samą sekwencje
         pass
 
+    def is_move_the_same(self):
+        pass
     def is_fifty_move_rule(self):
+        if self.info[9] >= 100:
+            print("50 powtorzen")
+            return True
+
+        return False
+    def is_pawn_move(self, x_start, y_start):
+        piece = self.board[y_start][x_start]
+
+        if abs(piece) == 1:
+            return True
+
+        return False
+    def update_fifty_move_rule(self, x_start, y_start, x_end, y_end):
+        if self.is_pawn_move(x_start, y_start) or self.is_it_capture(x_end, y_end):
+            self.info[9] = 0
+        else:
+            self.info[9] += 1
+
+    def is_move_without_change_of_material(self):
         pass
 
     def is_insufficient_material(self):
-        pass
+        # jeżeli na boardzie obie strony mają materiał niewystarczjaący do matowania, według FIDE są to pozycje:
+        # KB vs K
+        # KN vs K
+        # KNN vs K
+
+        pieces_white = []
+        pieces_black = []
+        white_sum = 0
+        black_sum = 0
+
+        for i in range(SIZE):
+            for j in range(SIZE):
+                piece = self.board[i][j]
+                if piece!= 0:
+                    if piece > 0:
+                        pieces_white.append(piece)
+                        white_sum += piece
+                    else:
+                        pieces_black.append(piece)
+                        black_sum += piece
+
+                if white_sum > 8 or abs(black_sum) > 8: # 8 ponieważ KNN dają sume największą czyli 8 bo 2+3+3
+                    return False
+
+        # KB vs K
+        # KN vs K
+
+        if len(pieces_white) == 2 and len(pieces_black) == 1:
+            if 4 in pieces_white or 3 in pieces_white:
+                return True
+
+        if len(pieces_black) == 2 and len(pieces_white) == 1:
+            if -4 in pieces_black or -3 in pieces_black:
+                return True
+
+        # KNN vs K
+
+        if len(pieces_white) == 3 and len(pieces_black) == 1:
+            if pieces_white.count(3) == 2:
+                return True
+
+        if len(pieces_black) == 3 and len(pieces_white) == 1:
+            if pieces_black.count(-3) == 2:
+                return True
+
+        return False
 
     def is_square_empty(self,x, y):
         if self.board[y][x] == 0:
@@ -183,8 +254,8 @@ class Engine:
             return True
 
         return False
-    def is_castling(self, x_start, y_start, x_end, y_end):
-        if abs(self.get_figure(x_start, y_start)) == 2: # jest to król
+    def is_castling(self, x_start, y_start, x_end, y_end, piece):
+        if abs(piece) == 2: # jest to król
             if abs(x_start - x_end) == 2:   # ruch o 2 pola to roszada
                 return True
 
@@ -453,8 +524,10 @@ class Engine:
         self.info[6] = False # promotio n
         self.info[7] = False # enpassant move
 
+        self.update_fifty_move_rule(start_x, start_y, end_x, end_y)
+
         # sprawdzić czy to roszada
-        if self.is_castling(start_x, start_y, end_x, end_y):
+        if self.is_castling(start_x, start_y, end_x, end_y, piece_from):
             if start_x - end_x == 2:  # Castling long
                 self.board[start_y][2] = 2 * color
                 self.board[start_y][4] = 0
@@ -545,7 +618,9 @@ class Engine:
 
         color = 1 if is_white else -1
 
-        if self.is_castling(start_x, start_y, end_x, end_y):
+        piece_from = self.get_figure(end_x, end_y)
+
+        if self.is_castling(start_x, start_y, end_x, end_y, piece_from):
             if start_x - end_x == 2:  # Castling long
                 self.board[start_y][0] = 5 * color
                 self.board[start_y][2] = 0

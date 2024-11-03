@@ -30,15 +30,13 @@ class Board:
         promotion = False
         enpassant = None
         self.promotion_choice = None
-        self.info = [self.white_queen_castling_right, self.white_king_castling_right, self.black_queen_castling_right, self.black_king_castling_right,  last_move, move, promotion, enpassant]
+        self.info = [self.white_queen_castling_right, self.white_king_castling_right, self.black_queen_castling_right, self.black_king_castling_right,  last_move, move, promotion, enpassant, self.threefold_repetition, self.fifty_move_rule]
 
         self.game = game
         self.frame = frame
         self.canvas_board = Canvas(self.frame, width=BOARD_WIDTH, height=BOARD_HEIGHT)
         self.canvas_label1 = Canvas(self.frame, width=LABEL_VERTUCAL_WIDTH, height=LABEL_VERTICAL_HEIGHT)
         self.canvas_label2 = Canvas(self.frame, width=LABEL_VERTICAL_HEIGHT, height=LABEL_VERTUCAL_WIDTH)
-        self.canvas_label1.create_text(20, 20, text="1", font=("Arial", 16), fill="black")
-        self.canvas_label2.create_text(20, 20, text="1", font=("Arial", 16), fill="black")
 
         self.squares = [[None for _ in range(SIZE)] for _ in range(SIZE)]
         self.squares_highlighted = [[None for _ in range(SIZE)] for _ in range(SIZE)]
@@ -82,32 +80,35 @@ class Board:
         self.canvas_board.place(x=50, y=100)
         # iterujemy po boardzie, jeśli miejsce = 0 to pass, a jesli nie to wyswietlamy figurę
     def display_labels(self):
+
+        for rank in range(8):
+            rank_label = Label(self.canvas_label1, text=str(8 - rank), font=("Arial", 12))
+            letter_height = rank_label.winfo_height()
+            letter_width = rank_label.winfo_width()
+            rank_label.place(x=LABEL_VERTUCAL_WIDTH - 10 * letter_width, y= rank * SPACE_SIZE + SPACE_SIZE // 2 - 5 * letter_height) # - SPACE_SIZE // 2
+
+        for file in range(8):
+            file_label = Label(self.canvas_label2, text=chr(file + 97), font=("Arial", 12))  # 97 is ASCII for 'a'
+            letter_width = file_label.winfo_width()
+            file_label.place(x=file * SPACE_SIZE + SPACE_SIZE // 2 - 5 * letter_width, y = 0) # - SPACE_SIZE // 2
+
         self.canvas_label1.place(x=0, y=100)
         self.canvas_label2.place(x=50, y=700)
 
-    def castling(self, color):
-        pass
+    def surrender(self):
+        self.result = -1 if self.white_turn else 1
+        self.game_on = False
 
-    def pawn_promotion(self, x_start, y_start, x_end, y_end):
+
+
+    def draw_game(self):
+        self.result = -1 if self.white_turn else 1
+        self.game_on = False
+
+    def end_game(self):
         pass
 
     def choose_piece(self):
-        # print("Enter what you want to promote")
-        # x = input()
-        #
-        # if x == "q" or "Q":
-        #     return 9
-        #
-        # if x == "r" or "R":
-        #     return 5
-        #
-        # if x == "b" or "B":
-        #     return 4
-        #
-        # if x == "n" or "N":
-        #     return 3
-        #
-        # return 9
         popup = Toplevel(self.frame)
         popup.title("Choose Piece for Promotion")
         popup.geometry("300x200")
@@ -130,20 +131,28 @@ class Board:
         # Pause the program until the popup window is closed
         popup.wait_window()
 
-        # Return the selected piece value
         return self.promotion_choice
     def move_pgn(self, string):
         pass
 
+    def change_move_to_LAN(self, x_start, y_start, x_end, y_end):
+        move_lan = f"{chr(x_start + 97)}{8 - y_start}{chr(x_end + 97)}{8 - y_end}"
+
+        return move_lan
+
+    def change_move_to_SAN(self, x_start, y_start, x_end, y_end):
+        pass
     def add_to_history(self,x_start, y_start, x_end, y_end):
         # is it castling
         # is it en passant
         # is it promotion
         # is it beating
         # is it only possible move
+        move_lan = self.change_move_to_LAN(x_start, y_start, x_end, y_end)
+        self.history.append(move_lan)
+
+    def save_pgn(self, filename, metadata):
         pass
-
-
     def is_Game_On(self):
         if self.engine.game_over() == None:
             return True

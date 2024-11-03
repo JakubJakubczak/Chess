@@ -84,7 +84,11 @@ class Dragger:
                 print(f"value {value}")
                 self.board.engine.promote(x_end, y_end, value)
             self.figures.move_images(self.drag_data, x_start, y_start, x_end, y_end)
+
             self.board.check_game_state()
+
+            self.board.add_to_history(x_start, y_start, x_end, y_end)
+            self.board.game.update()
             print(f"move {self.board.info[5]}")
             self.board.dehighlight_valid_moves()
             self.board.dehighlight_last_move()

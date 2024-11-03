@@ -42,7 +42,7 @@ class Figures:
             self.board.canvas_board.delete(item_del)
 
         color = 1 if self.board.engine.is_white_piece(x_end, y_end) else -1
-        # piece = self.board.engine.get_figure(x_end, y_end)
+        piece = self.board.engine.get_figure(x_end, y_end)
         ## centrowanie figury po przeniesieniu
 
         figure_coords_x, figure_coords_y = self.calculate_first_cordinates()
@@ -58,7 +58,8 @@ class Figures:
         self.canvas_images[y_start][x_start] = None
         self.canvas_images[y_end][x_end] = item
 
-        if self.board.engine.is_castling(x_start, y_start, x_end, y_end):
+        if self.board.engine.is_castling(x_start, y_start, x_end, y_end, piece):
+            print("castling")
             if self.board.engine.is_left_castling(x_start, x_end):
                 # znalezc wieze
                 item = self.canvas_images[y_start][0]
