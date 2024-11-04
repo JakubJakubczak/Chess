@@ -16,8 +16,10 @@ from Const import *
 from dragger import *
 
 class Figures:
-    def __init__(self, board):
+    def __init__(self, board, game):
        self.board = board
+       self.game = game
+
        self.images = [[None for _ in range(SIZE)] for _ in range(SIZE)]
        self.canvas_images = [[None for _ in range(SIZE)] for _ in range(SIZE)]
        self.images = self.load_canvas_images(board.board) # list
@@ -41,6 +43,10 @@ class Figures:
             item_del = self.canvas_images[y_end][x_end]
             self.board.canvas_board.delete(item_del)
 
+        # if drag_data == None:
+        #     drag_data["x"] = None
+        #     drag_data["y"] = None
+
         color = 1 if self.board.engine.is_white_piece(x_end, y_end) else -1
         piece = self.board.engine.get_figure(x_end, y_end)
         ## centrowanie figury po przeniesieniu
@@ -50,8 +56,13 @@ class Figures:
         center_coords_x = figure_coords_x + (x_end * SPACE_SIZE)
         center_coords_y = figure_coords_y + (y_end * SPACE_SIZE)
 
-        delta_center_x = drag_data["x"] - center_coords_x
-        delta_center_y = drag_data["y"] - center_coords_y
+        if drag_data == None:
+            delta_center_x = 0
+            delta_center_y = 0
+
+        else:
+            delta_center_x = drag_data["x"] - center_coords_x
+            delta_center_y = drag_data["y"] - center_coords_y
 
         item = self.canvas_images[y_start][x_start]
         self.board.canvas_board.move(item, -delta_center_x, -delta_center_y)
@@ -159,7 +170,7 @@ class Figures:
         return self.canvas_images
 
     def bind_figures(self, canvas):
-        dragger = Dragger(self, canvas, self.board)
+        dragger = Dragger(self, canvas, self.board, self.game)
         for i in range(SIZE):
             for j in range(SIZE):
                 if self.board.board[i][j] != 0:

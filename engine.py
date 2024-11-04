@@ -74,10 +74,14 @@ class Engine:
 
         return False
     def update_fifty_move_rule(self, x_start, y_start, x_end, y_end):
+        prev = self.info[9]
         if self.is_pawn_move(x_start, y_start) or self.is_it_capture(x_end, y_end):
             self.info[9] = 0
+
         else:
             self.info[9] += 1
+
+        return prev
 
     def is_move_without_change_of_material(self):
         pass
@@ -521,10 +525,15 @@ class Engine:
 
         color = 1 if is_white else -1
 
+        prev_promotion = self.info[6]
+        prev_enpassant = self.info[7]
         self.info[6] = False # promotio n
         self.info[7] = False # enpassant move
 
-        self.update_fifty_move_rule(start_x, start_y, end_x, end_y)
+        prev_50 = self.update_fifty_move_rule(start_x, start_y, end_x, end_y)
+
+        # [queen_castling_rigths, king_castling_rigths, prev_50_move, promotion, enpassant]
+        changes = [False, False, prev_50, prev_promotion, prev_enpassant]
 
         # sprawdzić czy to roszada
         if self.is_castling(start_x, start_y, end_x, end_y, piece_from):
@@ -556,8 +565,7 @@ class Engine:
 
         ## EN_PASSANT
 
-        # [queen_castling_rigths, king_castling_rigths]
-        changes = [False, False]
+
 
         last2_move = self.info[4]
         last_move = self.info[5] # now last move is previous move
@@ -631,11 +639,23 @@ class Engine:
                 self.board[start_y][5] = 0
                 self.board[start_y][6] = 0
                 self.board[start_y][7] = 5  * color
+        elif self.info[7]: # enpssant
+            self.board[end_y][end_x] = 0
+            self.board[start_y][start_x] = piece_from
+            self.board[end_y + color][end_x] = -color
+
         else:
             piece_from = self.get_figure(end_x, end_y)
             if piece_from != 0:
                 self.board[start_y][start_x] = piece_from
                 self.board[end_y][end_x] = piece
+
+        # undo promotion
+        # undo enpassant info
+        # undo fifty-move rule
+        self.info[6] = changes[3]
+        self.info[7] = changes[4]
+        self.info[9] = changes[2]
 
 
 

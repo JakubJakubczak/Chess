@@ -1,4 +1,6 @@
 from tkinter import *
+
+import Const
 from Const import *
 from game import *
 from PIL import Image, ImageTk
@@ -28,13 +30,22 @@ class Menu:
         game_label = canvas_menu.create_text(GAME_WIDTH / 2, 0 + font_size, text=game_Name, font=("Roboto:", font_size),
                                         fill="green")
 
-        button1 = Button(menu_window, text="Start the game",
+        button1 = Button(menu_window, text="Testowanie",
                          font=("Roboto"),
                          command=self.start,
                          fg="#00FF00",
                          bg="black",
                          borderwidth=5,
                          relief="raised")
+
+        button3 = Button(menu_window, text="Zagraj z komputerem",
+                         font=("Roboto"),
+                         command=self.start_ai,
+                         fg="#00FF00",
+                         bg="black",
+                         borderwidth=5,
+                         relief="raised")
+
         button2 = Button(menu_window, text="Exit",
                          font=("Roboto"),
                          command=self.exit,
@@ -49,26 +60,34 @@ class Menu:
         width_button2 = button2.winfo_width()
 
         end_of_button1Y = end_of_backgroundY + height_button1
+        end_of_button2Y = end_of_backgroundY + 2 * height_button1
 
         start_of_button2Y = end_of_button1Y + 5
+
+        start_of_button3Y = end_of_button2Y + 10
 
         button1.place(x=(GAME_WIDTH - width_button1) / 2,
                       y=end_of_backgroundY)  # Adjust the coordinates (x, y) as needed
         button2.place(x=(GAME_WIDTH - width_button2) / 2,
                       y=start_of_button2Y)  # Adjust the coordinates (x, y) as needed
 
+        button3.place(x=(GAME_WIDTH - width_button2) / 2,
+                      y=start_of_button3Y)
+
         menu_window.mainloop()
 
     def start(self):
         global menu_window
         menu_window.destroy()
+        Const.settings["AI"] = False
         game = Game()
 
-        # global canvas_game
-        # canvas_game = canvas_game(game_window, width=GAME_WIDTH, height=GAME_HEIGHT)
-        # drawBoard(game_window, canvas_game)
-        # loadFigures(canvas_game)
-        # drawFigures()
+    def start_ai(self):
+        global menu_window
+        menu_window.destroy()
+        Const.settings["AI"] = True
+        game = Game()
+
 
     def setup(self):
         pass

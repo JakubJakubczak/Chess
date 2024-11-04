@@ -1,10 +1,12 @@
 import board
 from Const import *
 class Dragger:
-    def __init__(self, figures, canvas, board):
+    def __init__(self, figures, canvas, board, game):
         self.figures = figures
         self.board = board
         self.canvas = canvas
+        self.game = game
+
         self.drag_data = {"x": 0, "y": 0, "item": None}
         self.initial_position = {"x": 0, "y": 0, "item": None}
         self.initial_index = [None,None]
@@ -20,27 +22,28 @@ class Dragger:
        return x_index,y_index
 
     def drag_start(self, event):
-        self.board.dehighlight_valid_moves()
-        x_board,y_board = self.calculate_board_position(event.x, event.y)
+        if settings["AI"] and self.board.white_turn == settings["TURN"] or not settings["AI"]:
+            self.board.dehighlight_valid_moves()
+            x_board,y_board = self.calculate_board_position(event.x, event.y)
 
-        if self.board.engine.is_white_piece(x_board, y_board) == self.board.white_turn:
-            self.drag_data["item"] = self.figures.canvas_images[y_board][x_board]
+            if self.board.engine.is_white_piece(x_board, y_board) == self.board.white_turn:
+                self.drag_data["item"] = self.figures.canvas_images[y_board][x_board]
 
-        if self.drag_data["item"]:
-            self.drag_data["x"] = event.x
-            self.drag_data["y"] = event.y
-            self.initial_index = [x_board, y_board]
-            self.figure = self.board.engine.get_figure(x_board, y_board)
+            if self.drag_data["item"]:
+                self.drag_data["x"] = event.x
+                self.drag_data["y"] = event.y
+                self.initial_index = [x_board, y_board]
+                self.figure = self.board.engine.get_figure(x_board, y_board)
 
-            # centrowanie figury po kliknięciu
-            x, y = self.canvas.coords(self.drag_data["item"])
-            delta_x = x - event.x
-            delta_y = y - event.y
-            self.initial_position = {'x': x, 'y': y, 'item': self.drag_data["item"]}
-            self.canvas.move(self.drag_data["item"], -delta_x, -delta_y)
+                # centrowanie figury po kliknięciu
+                x, y = self.canvas.coords(self.drag_data["item"])
+                delta_x = x - event.x
+                delta_y = y - event.y
+                self.initial_position = {'x': x, 'y': y, 'item': self.drag_data["item"]}
+                self.canvas.move(self.drag_data["item"], -delta_x, -delta_y)
 
-            valid_moves = self.board.engine.valid_moves(x_board, y_board)
-            self.board.highlight_valid_moves(valid_moves)
+                valid_moves = self.board.engine.valid_moves(x_board, y_board)
+                self.board.highlight_valid_moves(valid_moves)
 
 
     def drag_motion(self, event):
@@ -76,23 +79,7 @@ class Dragger:
                 return
 
 
-            self.board.white_turn = not self.board.white_turn
-            self.board.engine.move_board(x_start, y_start, x_end, y_end)
-            if self.board.engine.is_pawn_promotion(x_end, y_end, x_end, y_end):
-                print("promotion")
-                value = self.board.choose_piece()
-                print(f"value {value}")
-                self.board.engine.promote(x_end, y_end, value)
-            self.figures.move_images(self.drag_data, x_start, y_start, x_end, y_end)
-
-            self.board.check_game_state()
-
-            self.board.add_to_history(x_start, y_start, x_end, y_end)
-            self.board.game.update()
-            print(f"move {self.board.info[5]}")
-            self.board.dehighlight_valid_moves()
-            self.board.dehighlight_last_move()
-            self.board.highlight_move()
+            self.game.move(self.drag_data, x_start, y_start, x_end, y_end)
 
             print(self.board.board)
             self.drag_data["item"] = None

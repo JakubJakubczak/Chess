@@ -21,3 +21,8 @@ KNIGHT_VALUE = 310
 BISHOP_VALUE = 330
 ROOK_VALUE = 500
 QUEEN_VALUE = 900
+
+settings = {
+    "AI": False,
+    "TURN": True
+}
