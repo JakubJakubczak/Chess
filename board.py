@@ -23,6 +23,7 @@ class Board:
         self.black_queen_castling_right = True
         self.white_king_castling_right = True
         self.black_king_castling_right = True
+        self.score = 0
 
         # dodać o en_passant też pewnie
         move = None
@@ -94,10 +95,6 @@ class Board:
 
         self.canvas_label1.place(x=0, y=100)
         self.canvas_label2.place(x=50, y=700)
-
-    def surrender(self):
-        self.result = -1 if self.white_turn else 1
-        self.game_on = False
 
 
 

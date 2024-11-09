@@ -22,6 +22,9 @@ class Dragger:
        return x_index,y_index
 
     def drag_start(self, event):
+        if not self.board.game_on:
+            return
+
         if settings["AI"] and self.board.white_turn == settings["TURN"] or not settings["AI"]:
             self.board.dehighlight_valid_moves()
             x_board,y_board = self.calculate_board_position(event.x, event.y)

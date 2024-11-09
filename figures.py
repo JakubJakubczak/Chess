@@ -57,8 +57,8 @@ class Figures:
         center_coords_y = figure_coords_y + (y_end * SPACE_SIZE)
 
         if drag_data == None:
-            delta_center_x = 0
-            delta_center_y = 0
+            delta_center_x = -(x_end - x_start) * SPACE_SIZE
+            delta_center_y = -(y_end - y_start) * SPACE_SIZE
 
         else:
             delta_center_x = drag_data["x"] - center_coords_x

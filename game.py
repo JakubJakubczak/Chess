@@ -7,6 +7,7 @@ from ai import *
 from tkinter import messagebox
 from Const import *
 
+
 class Game:
     def __init__(self):
         self.game_window = Tk()
@@ -27,14 +28,17 @@ class Game:
         print("Game ended")
         result = self.board.get_result()
         # Handle game over logic here as before (message box or print)
-        from tkinter import messagebox
-        messagebox.showinfo("Game Over", f"Game Over: {result}")
+        # from tkinter import messagebox
+        # messagebox.showinfo("Game Over", f"Game Over: {result}")
+        self.game_menu.display_result(result)
 
     def update(self):
-        if settings["AI"] and self.board.white_turn != settings["TURN"]:
+        if settings["AI"] and self.board.white_turn != settings["TURN"] and self.board.game_on:
             random_move = self.ai.generate_random_move(not settings["TURN"])
             self.move(None, random_move[0], random_move[1], random_move[2], random_move[3])
-        self.game_menu.update_move_history(self.board.history)
+        self.game_menu.display_history(self.board.history)
+        self.game_menu.display_score(self.board.score)
+
 
     def move(self, drag_data, x_start, y_start, x_end, y_end):
         self.board.white_turn = not self.board.white_turn
@@ -45,7 +49,6 @@ class Game:
             print(f"value {value}")
             self.board.engine.promote(x_end, y_end, value)
         self.figures.move_images(drag_data, x_start, y_start, x_end, y_end)
-        self.board.game.update()
         self.board.check_game_state()
 
         self.board.add_to_history(x_start, y_start, x_end, y_end)
@@ -55,4 +58,16 @@ class Game:
         self.board.dehighlight_last_move()
         self.board.highlight_move()
 
+        self.board.game.update()
+
         print(f"AI {settings["AI"]}")
+
+
+    def surrender(self):
+        self.board.result = -1 if self.board.white_turn else 1
+        self.board.game_on = False
+        self.handle_game_end()
+
+    def back_to_menu(self):
+        self.game_window.destroy()
+        menu = Menu()
