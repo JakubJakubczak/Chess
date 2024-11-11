@@ -531,9 +531,14 @@ class Engine:
         self.info[7] = False # enpassant move
 
         prev_50 = self.update_fifty_move_rule(start_x, start_y, end_x, end_y)
+        prev_score = self.info[10]
 
         # [queen_castling_rigths, king_castling_rigths, prev_50_move, promotion, enpassant]
-        changes = [False, False, prev_50, prev_promotion, prev_enpassant]
+        changes = [False, False, prev_50, prev_promotion, prev_enpassant, prev_score]
+
+        if self.is_it_capture(end_x, end_y):
+            self.info[10] -= piece_to
+
 
         # sprawdzić czy to roszada
         if self.is_castling(start_x, start_y, end_x, end_y, piece_from):
@@ -656,6 +661,7 @@ class Engine:
         self.info[6] = changes[3]
         self.info[7] = changes[4]
         self.info[9] = changes[2]
+        self.info[10] = changes[5]
 
 
 

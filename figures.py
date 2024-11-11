@@ -41,11 +41,16 @@ class Figures:
     def move_images(self, drag_data, x_start, y_start, x_end, y_end):
         if self.board.engine.is_it_capture(x_end, y_end):
             item_del = self.canvas_images[y_end][x_end]
+            if item_del != None:
+                tags = self.board.canvas_board.gettags(item_del)
+                print(f"tags {tags}")
+                self.game.game_menu.add_piece_to_player(self.board.white_turn, tags)
             self.board.canvas_board.delete(item_del)
 
-        # if drag_data == None:
-        #     drag_data["x"] = None
-        #     drag_data["y"] = None
+
+
+
+
 
         color = 1 if self.board.engine.is_white_piece(x_end, y_end) else -1
         piece = self.board.engine.get_figure(x_end, y_end)

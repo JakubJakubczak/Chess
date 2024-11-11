@@ -31,7 +31,7 @@ class Board:
         promotion = False
         enpassant = None
         self.promotion_choice = None
-        self.info = [self.white_queen_castling_right, self.white_king_castling_right, self.black_queen_castling_right, self.black_king_castling_right,  last_move, move, promotion, enpassant, self.threefold_repetition, self.fifty_move_rule]
+        self.info = [self.white_queen_castling_right, self.white_king_castling_right, self.black_queen_castling_right, self.black_king_castling_right,  last_move, move, promotion, enpassant, self.threefold_repetition, self.fifty_move_rule, self.score]
 
         self.game = game
         self.frame = frame

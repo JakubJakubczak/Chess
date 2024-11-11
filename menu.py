@@ -51,38 +51,41 @@ class Menu_own:
                          command=self.exit,
                          fg="#00FF00",
                          bg="black", )
-        button1.pack()
-        button2.pack()
-        self.menu_window.update()
+        button1.place(x=0, y=0)
+        button2.place(x=0, y=0)
+        button3.place(x=0, y=0)
+        self.menu_window.update_idletasks()
 
         width_button1 = button1.winfo_width()
         height_button1 = button1.winfo_height()
+        height_button2 = button2.winfo_height()
         width_button2 = button2.winfo_width()
+        width_button3 = button3.winfo_width()
 
         end_of_button1Y = end_of_backgroundY + height_button1
         end_of_button2Y = end_of_backgroundY + 2 * height_button1
+        start_of_button3Y = end_of_backgroundY + 3 * height_button1 + 10
 
         start_of_button2Y = end_of_button1Y + 5
 
+        end_of_button2Y = start_of_button2Y + height_button2
+
         start_of_button3Y = end_of_button2Y + 10
 
-        button1.place(x=(GAME_WIDTH - width_button1) / 2,
-                      y=end_of_backgroundY)  # Adjust the coordinates (x, y) as needed
-        button2.place(x=(GAME_WIDTH - width_button2) / 2,
-                      y=start_of_button2Y)  # Adjust the coordinates (x, y) as needed
+        button1.place(x=(GAME_WIDTH - width_button1) // 2, y=end_of_backgroundY)
+        button3.place(x=(GAME_WIDTH - width_button3) // 2, y=start_of_button2Y)
+        button2.place(x=(GAME_WIDTH - width_button2) // 2, y=start_of_button3Y)
 
-        button3.place(x=(GAME_WIDTH - width_button2) / 2,
-                      y=start_of_button3Y)
 
     def start(self):
         self.menu_window.destroy()
         Const.settings["AI"] = False
-        game = Game()
+        game = Game(self.back_to_menu)
 
     def start_ai(self):
         self.menu_window.destroy()
         Const.settings["AI"] = True
-        game = Game()
+        game = Game(self.back_to_menu)
 
 
     def setup(self):
@@ -90,3 +93,6 @@ class Menu_own:
 
     def exit(self):
         self.menu_window.destroy()
+
+    def back_to_menu(self):
+        menu = Menu_own()

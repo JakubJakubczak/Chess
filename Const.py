@@ -27,8 +27,12 @@ KNIGHT_SCORE = 3
 BISHOP_SCORE = 3
 ROOK_SCORE = 5
 QUEEN_SCORE = 9
+KING_SCORE = 100
 
 settings = {
     "AI": False,
     "TURN": True
 }
+
+SMALL_PIECE_SIZE = 20
+PIECE_SIZE = 60
