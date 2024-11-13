@@ -1,36 +1,42 @@
 import random
+import copy
 from Const import *
 
 class Ai:
     def __init__(self, board):
-        self.board = board.board
-        self.info = board.info
         self.engine = board.engine
-
+        self.copy_engine = copy.deepcopy(self.engine)
+        self.best_move = None
 
     # algorytm mniej więcej, bez żadnych cięć, promotio move zrobić i przerobić to żeby działało
-    def negamax(self, board, depth, color):
-        if depth == 0 or self.engine.game_over() != None:
-            return color * self.evaluate_board(board)
+    def negamax(self, depth, color):
+        if depth == 0 or self.copy_engine.game_over() != None:
+            return color * self.evaluate(), self.best_move
 
+        for_white = True if color == 1 else False
         max_eval = float('-inf')
-        for move in self.engine.all_valid_moves(color):
+
+        for move in self.copy_engine.all_valid_moves(for_white):
             start_x, start_y, end_x, end_y, *promotion = move
             promotion_type = promotion[0] if promotion else None
 
-            self.engine.move_board(start_x, start_y, end_x, end_y, promotion_type)
-            evaluation = -self.negamax(board, depth - 1, -color)
-            board.undo_move()
+            piece, is_white, changes, last2_move = self.copy_engine.move_board(start_x, start_y, end_x, end_y, promotion_type)
+            evaluation, _ = self.negamax( depth - 1, -color)
+            evaluation = -evaluation
 
-            max_eval = max(max_eval, evaluation)
+            self.copy_engine.undo_move_board(start_x, start_y, end_x, end_y, piece, is_white, changes, last2_move)
 
-        return max_eval
+            if evaluation > max_eval:
+                max_eval = evaluation
+                self.best_move = move
 
-    def evaluate_board(self, board):
-        pass
+        return max_eval, self.best_move
 
-    def best_move(self):
-        pass
+    def find_best_move(self, depth, color):
+        score, best_move = self.negamax(depth, color)
+        print(f"Best move found: {best_move} with score {score}")
+
+        return best_move, score
 
     def generate_random_move(self, is_white):
         valid_moves = self.engine.all_valid_moves(is_white)
@@ -41,6 +47,10 @@ class Ai:
         random_move = random.choice(valid_moves)
 
         return random_move
+
+
+    def update_copy_engine(self, engine):
+        self.copy_engine = copy.deepcopy(engine)
 
     def evaluate(self):
         material_score = self.evaluate_material()

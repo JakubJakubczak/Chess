@@ -299,30 +299,37 @@ class Engine:
         if moves == None:
             return False
 
-        if move in moves:
-            return True
-        else:
-            return False
+        for valid_move in moves:
+            if valid_move[:4] == move:
+                return True
+
+        return False
+
 
     ## generating all posible moves for white or for black
     def all_valid_moves(self, for_white, checking = False):
         all_moves = []
         for i in range(SIZE):
             for k in range(SIZE):
-                if self.board[k][i] == 0:
+                if self.board[i][k] == 0:
                     continue
 
-                if for_white != self.is_white_piece(i, k):
+                if for_white != self.is_white_piece(k, i):
                     continue
 
-                moves = self.valid_moves(i, k, checking)
+                moves = self.valid_moves(k, i, checking)
                 length = len(moves)
                 for j in range(length):
                     all_moves.append(moves[j])
 
         return all_moves
 
-
+    # 4 możliwośći zwraca
+    def append_move_as_promotion(self, x_start, y_start, x_end, y_end, moves):
+        moves.append((x_start, y_start, x_end, y_end, 9))
+        moves.append((x_start, y_start, x_end, y_end, 5))
+        moves.append((x_start, y_start, x_end, y_end, 4))
+        moves.append((x_start, y_start, x_end, y_end, 3))
 
     def valid_moves(self,x,y, checking = False):
         piece = self.get_figure(x, y)
@@ -341,31 +348,52 @@ class Engine:
 
             # vertical for white pawn
             if piece == 1 and y > 0 and self.board[y - 1][x] == 0:
-                moves.append((x, y, x, y - 1))
+                if y - 1 == 0:
+                    self.append_move_as_promotion(x, y, x, y - 1, moves)
+                else:
+                    moves.append((x, y, x, y - 1))
+
                 if y == 6 and self.board[y - 2][x] == 0:
                     moves.append((x, y, x, y - 2))
 
             # vertical for black pawn
             if piece == -1 and y + 1 < SIZE and self.board[y + 1][x] == 0:
-                moves.append((x, y, x, y + 1))
+                if  y + 1 == 7:
+                    self.append_move_as_promotion(x, y, x, y + 1, moves)
+                else:
+                    moves.append((x, y, x, y + 1))
+
                 if y == 1 and self.board[y + 2][x] == 0:
                     moves.append((x, y, x, y + 2))
 
             # diagonal to left for white pawn
             if piece == 1 and y > 0 and x > 0 and self.board[y - 1][x - 1] < 0:
-                moves.append((x, y, x - 1, y - 1))
+                if y - 1 == 0:
+                    self.append_move_as_promotion(x, y, x - 1, y - 1, moves)
+                else:
+                    moves.append((x, y, x - 1, y - 1))
 
             # diagonal to right for white pawn
             if piece == 1 and y > 0 and x < SIZE - 1 and self.board[y - 1][x + 1] < 0:
-                moves.append((x, y, x + 1, y - 1))
+                if y - 1 == 0:
+                    self.append_move_as_promotion(x, y, x + 1, y - 1, moves)
+                else:
+                    moves.append((x, y, x + 1, y - 1))
 
             # diagonal to left for black pawn
             if piece == -1 and y < SIZE - 1 and x > 0 and self.board[y + 1][x - 1] > 0:
-                moves.append((x, y, x - 1, y + 1))
+                if y + 1 == 7:
+                    self.append_move_as_promotion(x, y, x - 1, y + 1, moves)
+                else:
+                    moves.append((x, y, x - 1, y + 1))
 
             # diagonal to right for black pawn
             if piece == -1 and y < SIZE - 1 and x < SIZE - 1 and self.board[y + 1][x + 1] > 0:
                 moves.append((x, y, x + 1, y + 1))
+                if y + 1 == 7:
+                    self.append_move_as_promotion(x, y, x + 1, y + 1, moves)
+                else:
+                    moves.append((x, y, x + 1, y + 1))
 
             ## EN PASSANT !
             move = self.info[5]
@@ -506,7 +534,10 @@ class Engine:
             for move in moves:
 
                 # Make the move on the copy of the board
-                piece,is_white,changes, last2_move = new_engine.move_board(move[0], move[1], move[2], move[3])
+                if len(move) == 5:
+                    piece, is_white, changes, last2_move = new_engine.move_board(move[0], move[1], move[2], move[3], move[4])
+                else:
+                    piece,is_white,changes, last2_move = new_engine.move_board(move[0], move[1], move[2], move[3])
 
                 # Check if the move results in a check for the current player
                 if not new_engine.is_check(is_white):  # Valid if it doesn't put the king in check
@@ -518,7 +549,7 @@ class Engine:
 
         return moves
 
-    def move_board(self, start_x, start_y, end_x, end_y):
+    def move_board(self, start_x, start_y, end_x, end_y, promotion = None):
         is_white = self.is_white_piece(start_x, start_y)
         piece_from = self.get_figure(start_x, start_y)
         piece_to = self.get_figure(end_x, end_y)
@@ -555,7 +586,7 @@ class Engine:
 
         elif self.is_pawn_promotion(start_x, start_y, end_x, end_y):
             self.info[6] = True
-            self.board[end_y][end_x] = piece_from
+            self.board[end_y][end_x] = promotion * color
             self.board[start_y][start_x] = 0
 
         elif self.is_enpassant(start_x, start_y, end_x, end_y, piece_from):

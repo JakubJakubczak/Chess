@@ -79,10 +79,11 @@ class Dragger:
             if not self.board.engine.is_valid_move(x_start, y_start, x_end, y_end):
                 self.canvas.move(self.drag_data["item"], -delta_x, -delta_y)
                 self.drag_data["item"] = None
+                print("Not valid move")
                 return
 
 
-            self.game.move(self.drag_data, x_start, y_start, x_end, y_end)
+            self.game.update(self.drag_data, x_start, y_start, x_end, y_end)
 
             print(self.board.board)
             self.drag_data["item"] = None
