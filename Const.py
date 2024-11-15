@@ -36,3 +36,4 @@ settings = {
 
 SMALL_PIECE_SIZE = 20
 PIECE_SIZE = 60
+DEPTH = 2

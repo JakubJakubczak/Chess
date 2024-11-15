@@ -13,7 +13,7 @@ import time
 class Game:
     def __init__(self, back_to_menu_callback):
         self.back_to_menu_callback = back_to_menu_callback
-        self.depth = 3
+        self.depth = 2
         self.game_window = Tk()
         self.game_window.title("GAME")
         self.game_window.resizable(False, False)
@@ -22,15 +22,15 @@ class Game:
         self.board = Board(self.frame, self)
         self.game_menu = Game_menu(self.frame, self)
         self.figures = Figures(self.board, self)
-        self.ai = Ai(self.board)
+        self.ai = Ai()
         self.game_menu.display_score(self.board.score)
-        eval = self.ai.evaluate()
-        self.game_menu.display_eval(eval)
+        evalu = self.ai.evaluate(self.board.engine)
+        self.game_menu.display_eval(evalu)
         self.game_window.mainloop()
 
 
         if settings["AI"] == True and settings["TURN"] == False:
-           random_move =  self.ai.generate_random_move(not settings["TURN"] )
+           random_move =  self.ai.generate_random_move(not settings["TURN"], self.board.engine)
            self.move(None, random_move[0], random_move[1], random_move[2], random_move[3])
 
 
@@ -44,14 +44,14 @@ class Game:
 
     def update(self, drag_data, x_start, y_start, x_end, y_end):
         promotion_val = None
-        self.board.white_turn = not self.board.white_turn
+
         if self.board.engine.is_pawn_promotion(x_start, y_start, x_end, y_end):
             print("promotion")
             promotion_val = self.board.choose_piece()
             print(f"value {promotion_val}")
 
         self.move(drag_data, x_start, y_start, x_end, y_end, promotion_val)
-
+        self.board.white_turn = not self.board.white_turn
         self.update_menu_and_highlight(x_start, y_start, x_end, y_end)
         self.board.check_game_state()
 
@@ -69,7 +69,7 @@ class Game:
         self.board.add_to_history(x_start, y_start, x_end, y_end)
         self.game_menu.display_history(self.board.history)
         self.game_menu.display_score(self.board.info[10])
-        eval = self.ai.evaluate()
+        eval = self.ai.evaluate(self.board.engine)
         self.game_menu.display_eval(eval)
 
         self.board.dehighlight_valid_moves()
@@ -81,36 +81,36 @@ class Game:
         promotion_val = None
 
         ## RANDOM MOVE
-        random_move = self.ai.generate_random_move(not settings["TURN"])
-        if len(random_move) == 5:
-            promotion_val = random_move[4]
-
-        self.move(None, random_move[0], random_move[1], random_move[2], random_move[3], promotion_val)
-        self.board.white_turn = not self.board.white_turn
-
-        # self.ai.update_copy_engine(self.board.engine)
+        # random_move = self.ai.generate_random_move(not settings["TURN"], self.board.engine)
+        # if len(random_move) == 5:
+        #     promotion_val = random_move[4]
         #
-        # start_time = time.time()
-        # best_move = self.ai.find_best_move(self.depth, -1)
-        # end_time = time.time()
-        #
-        #
-        #
-        # elapsed_time = end_time - start_time
-        # print("Elapsed time:", elapsed_time, "seconds")
-        #
-        # if best_move is None:
-        #     print("No valid moves found for AI.")
-        #     return
-        #
-        # if len(best_move[0]) == 5:
-        #     promotion_val = best_move[0][4]
-        #
-        # print(f"best move {best_move}")
-        #
-        # self.move(None, best_move[0][0], best_move[0][1], best_move[0][2], best_move[0][3], promotion_val)
-        #
+        # self.move(None, random_move[0], random_move[1], random_move[2], random_move[3], promotion_val)
         # self.board.white_turn = not self.board.white_turn
+
+
+
+        start_time = time.time()
+        best_move = self.ai.find_best_move(DEPTH, -1, self.board.engine)
+        end_time = time.time()
+
+
+
+        elapsed_time = end_time - start_time
+        print("Elapsed time:", elapsed_time, "seconds")
+
+        if best_move is None:
+            print("No valid moves found for AI.")
+            return
+
+        if len(best_move[0]) == 5:
+            promotion_val = best_move[0][4]
+
+        print(f"best move {best_move}")
+
+        self.move(None, best_move[0][0], best_move[0][1], best_move[0][2], best_move[0][3], promotion_val)
+
+        self.board.white_turn = not self.board.white_turn
 
     def move(self, drag_data, x_start, y_start, x_end, y_end, promotion_val = None):
         self.board.engine.move_board(x_start, y_start, x_end, y_end, promotion_val)
