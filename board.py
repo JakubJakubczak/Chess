@@ -2,6 +2,7 @@ from tkinter.constants import BOTTOM
 from tkinter import *
 from Const import *
 from engine import *
+import numpy as np
 ###############
 ## NOTATION ##
 ## QUEEN - 9
@@ -15,7 +16,7 @@ class Board:
     def __init__(self, frame, game):
         self.game_on = True
         self.white_turn = True
-        self.history = [] # historia jest w formacie PGN
+        self.history = [] # historia jest w formacie LAN
         self.result = None
         self.threefold_repetition = 0
         self.fifty_move_rule = 0

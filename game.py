@@ -52,6 +52,7 @@ class Game:
 
         self.move(drag_data, x_start, y_start, x_end, y_end, promotion_val)
         self.board.white_turn = not self.board.white_turn
+        self.board.engine.update_valid_moves()
         self.update_menu_and_highlight(x_start, y_start, x_end, y_end)
         self.board.check_game_state()
 
@@ -111,6 +112,7 @@ class Game:
         self.move(None, best_move[0][0], best_move[0][1], best_move[0][2], best_move[0][3], promotion_val)
 
         self.board.white_turn = not self.board.white_turn
+        self.board.engine.update_valid_moves()
 
     def move(self, drag_data, x_start, y_start, x_end, y_end, promotion_val = None):
         self.board.engine.move_board(x_start, y_start, x_end, y_end, promotion_val)

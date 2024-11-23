@@ -2,9 +2,13 @@ from Const import *
 import copy
 
 class Engine:
-    def __init__(self, board, info):
+    def __init__(self, board, info, turn = None):
         self.board = board
         self.info = info
+        self.turn = turn
+        self.boolean = False
+        self.last_valid_moves = None
+        self.valid_moves_var = self.all_valid_moves(turn)
 
     def is_check(self, for_white):
         king_position = self.king_position(for_white)
@@ -31,7 +35,7 @@ class Engine:
         ## check if it will generate bugs, probalby turns required
         if self.all_valid_moves(WHITE) == [] and not self.is_check(WHITE):
             return True
-        if self.all_valid_moves(WHITE) == [] and not self.is_check(WHITE):
+        if self.all_valid_moves(BLACK) == [] and not self.is_check(BLACK):
             return True
 
         return False
@@ -645,10 +649,16 @@ class Engine:
 
 
 
-        ## SAVE TO HISTORY
+
 
         return piece_to, is_white, changes, last2_move
 
+
+    ## uzywac  po wykonaniu move_board i zmianie tury
+    def update_valid_moves(self):
+        # ## zapisywanie valid_mmoves
+        self.last_valid_moves = self.valid_moves
+        self.valid_moves_var = self.all_valid_moves(self.turn)
     def undo_move_board(self, start_x, start_y, end_x, end_y, piece, is_white,changes, last2_move):
         ## UNDO ALL THAT HAPPANED IN MOVE, for example castling rights
         if changes[0]:
@@ -693,6 +703,8 @@ class Engine:
         self.info[7] = changes[4]
         self.info[9] = changes[2]
         self.info[10] = changes[5]
+        self.valid_moves_var = self.last_valid_moves
+        self.last_valid_moves = None
 
 
 
