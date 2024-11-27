@@ -20,6 +20,7 @@ class Game:
         self.frame = Frame(self.game_window, width=GAME_WIDTH, height=GAME_HEIGHT)
         self.frame.pack()
         self.board = Board(self.frame, self)
+        self.board.engine.update_valid_moves()
         self.game_menu = Game_menu(self.frame, self)
         self.figures = Figures(self.board, self)
         self.ai = Ai()
@@ -64,6 +65,10 @@ class Game:
             self.board.check_game_state()
 
         print(f"all_valid_moves {self.board.engine.all_valid_moves(False)}")
+        print(f"all_valid_moves for white {self.board.engine.valid_moves_white}")
+        print(f"all_valid_moves for black {self.board.engine.valid_moves_black}")
+
+
 
 
     def update_menu_and_highlight(self, x_start, y_start, x_end, y_end):
@@ -112,10 +117,14 @@ class Game:
         self.move(None, best_move[0][0], best_move[0][1], best_move[0][2], best_move[0][3], promotion_val)
 
         self.board.white_turn = not self.board.white_turn
-        self.board.engine.update_valid_moves()
 
     def move(self, drag_data, x_start, y_start, x_end, y_end, promotion_val = None):
         self.board.engine.move_board(x_start, y_start, x_end, y_end, promotion_val)
+        if self.board.white_turn is True:
+            self.board.engine.update_valid_moves_black()
+        else:
+            self.board.engine.update_valid_moves_white()
+
         self.figures.move_images(drag_data, x_start, y_start, x_end, y_end)
 
 

@@ -12,8 +12,10 @@ class Ai:
 
 
     def negamax(self, depth, color, engine_copy, alpha, beta, moves):
-        if depth == 0 or engine_copy.game_over():
-            return color * self.evaluate(engine_copy), self.best_move
+         ### if engine_copy.game_over(): ciąć ścieżkę jeśli wiadoomo, że koniec gry
+
+        if depth == 0:
+            return color * self.evaluate(engine_copy, color), self.best_move
 
         for_white = True if color == 1 else False
         max_eval = float('-inf')
@@ -21,16 +23,28 @@ class Ai:
         # print(f" All valid moves for {for_white} {engine_copy.all_valid_moves(for_white)}")
         # moves = self.order_moves(engine_copy.all_valid_moves(for_white), engine_copy, for_white)
         # moves = engine_copy.all_valid_moves(for_white)
+        # random.shuffle(moves)
         for move in moves:
             start_x, start_y, end_x, end_y, *promotion = move
             promotion_type = promotion[0] if promotion else None
 
             piece, is_white, changes, last2_move = engine_copy.move_board(start_x, start_y, end_x, end_y, promotion_type)
-            next_moves  = engine_copy.all_valid_moves(not for_white)
+            if for_white is True:
+                engine_copy.update_valid_moves_black(True)
+            else:
+                engine_copy.update_valid_moves_white(True)
+
+            next_moves  = engine_copy.valid_moves_black if for_white is True else engine_copy.valid_moves_white
+
             evaluation, _ = self.negamax( depth - 1, -color, engine_copy, -beta, -alpha, next_moves)
             evaluation = -evaluation
 
             engine_copy.undo_move_board(start_x, start_y, end_x, end_y, piece, is_white, changes, last2_move)
+
+            if for_white is True:
+                engine_copy.undo_valid_moves_black()
+            else:
+                engine_copy.undo_valid_moves_white()
 
             if evaluation > max_eval:
                 max_eval = evaluation
@@ -47,9 +61,6 @@ class Ai:
             alpha = max(alpha, max_eval)
             if alpha >= beta:
                 break
-
-
-
 
         return (max_eval, self.best_move)
 
@@ -105,16 +116,14 @@ class Ai:
     # def update_copy_engine(self, engine):
     #     self.copy_engine = copy.deepcopy(engine)
 
-    def evaluate(self, engine):
+    def evaluate(self, engine, color = None):
 
         # if engine.checkmate():
         #     return MATE
         #
-        # if engine.draw():
-        #     return DRAW
+        # for_white = True if color == 1 else False
         #
-        # if engine.is_stalemate():
-        #     return DRAW
+        # if not engine.is_king_on_board(for_white)
 
         material_score = self.evaluate_material(engine)
         # position_score = self.evaluate_position(engine)

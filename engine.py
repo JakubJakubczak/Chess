@@ -7,12 +7,18 @@ class Engine:
         self.info = info
         self.turn = turn
         self.boolean = False
-        self.last_valid_moves = None
-        self.valid_moves_var = self.all_valid_moves(turn)
+        self.last_valid_moves_white = None
+        self.last_valid_moves_black = None
+        self.valid_moves_white = None
+        self.valid_moves_black = None
+
 
     def is_check(self, for_white):
         king_position = self.king_position(for_white)
-        all_moves = self.all_valid_moves(not for_white, True)
+        all_moves = self.valid_moves_black if for_white else self.valid_moves_white
+        if all_moves is None:   # Przy inicjacji
+            return False
+
         length = len(all_moves)
 
         for i in range(length):
@@ -22,20 +28,33 @@ class Engine:
 
         return False
 
+    def is_king_on_board(self, for_white):
+        if for_white:
+            value = 2
+        else:
+            value = -2
+
+        for col in range(SIZE):
+            for row in range(SIZE):
+                piece = self.board[col][row]
+                if piece == value:
+                    return True
+
+        return False
 
     def checkmate(self):
-        if self.is_check(WHITE) and self.all_valid_moves(WHITE) == []:
+        if self.is_check(WHITE) and self.valid_moves_white == []:
             return False
-        if self.is_check(BLACK) and self.all_valid_moves(BLACK) == []:
+        if self.is_check(BLACK) and self.valid_moves_black == []:
             return True
 
         return None
 
     def is_stalemate(self):
         ## check if it will generate bugs, probalby turns required
-        if self.all_valid_moves(WHITE) == [] and not self.is_check(WHITE):
+        if self.valid_moves_white == [] and not self.is_check(WHITE):
             return True
-        if self.all_valid_moves(BLACK) == [] and not self.is_check(BLACK):
+        if self.valid_moves_black == [] and not self.is_check(BLACK):
             return True
 
         return False
@@ -196,7 +215,7 @@ class Engine:
 
 
     def is_square_attacked(self, for_white, x, y):
-        all_moves = self.all_valid_moves(not for_white, True)
+        all_moves = self.valid_moves_black if for_white else self.valid_moves_white
 
         for move in all_moves:
             if move[2] == x and move[3] == y:
@@ -543,11 +562,19 @@ class Engine:
                 else:
                     piece,is_white,changes, last2_move = new_engine.move_board(move[0], move[1], move[2], move[3])
 
+                if color == 1:
+                    new_engine.update_valid_moves_black(True)
+                else:
+                    new_engine.update_valid_moves_white(True)
                 # Check if the move results in a check for the current player
                 if not new_engine.is_check(is_white):  # Valid if it doesn't put the king in check
                     valid_moves.append(move)
                 # # Undo the move to restore the original board state
                 new_engine.undo_move_board(move[0], move[1], move[2], move[3], piece, is_white, changes, last2_move)
+                if color == 1:
+                    new_engine.undo_valid_moves_black()
+                else:
+                    new_engine.undo_valid_moves_white()
 
             return valid_moves
 
@@ -655,10 +682,36 @@ class Engine:
 
 
     ## uzywac  po wykonaniu move_board i zmianie tury
-    def update_valid_moves(self):
+    def update_valid_moves(self,checking = False):
         # ## zapisywanie valid_mmoves
-        self.last_valid_moves = self.valid_moves
-        self.valid_moves_var = self.all_valid_moves(self.turn)
+        self.last_valid_moves_white = self.valid_moves_white
+        self.last_valid_moves_black = self.valid_moves_black
+        self.valid_moves_white = self.all_valid_moves(True,checking)
+        self.valid_moves_black = self.all_valid_moves(False,checking)
+
+
+    def update_valid_moves_white(self,checking = False):
+        self.last_valid_moves_white = self.valid_moves_white
+        self.valid_moves_white = self.all_valid_moves(True,checking)
+
+    def update_valid_moves_black(self,checking = False):
+        self.last_valid_moves_black = self.valid_moves_black
+        self.valid_moves_black = self.all_valid_moves(False,checking)
+
+    def undo_update_valid_moves(self):
+        self.valid_moves_white = self.last_valid_moves_white
+        self.valid_moves_black = self.last_valid_moves_black
+        self.last_valid_moves_white = None
+        self.last_valid_moves_black = None
+
+    def undo_valid_moves_white(self):
+        self.valid_moves_white = self.last_valid_moves_white
+        self.last_valid_moves_white = None
+
+    def undo_valid_moves_black(self):
+        self.valid_moves_black = self.last_valid_moves_black
+        self.last_valid_moves_black = None
+
     def undo_move_board(self, start_x, start_y, end_x, end_y, piece, is_white,changes, last2_move):
         ## UNDO ALL THAT HAPPANED IN MOVE, for example castling rights
         if changes[0]:
@@ -703,8 +756,8 @@ class Engine:
         self.info[7] = changes[4]
         self.info[9] = changes[2]
         self.info[10] = changes[5]
-        self.valid_moves_var = self.last_valid_moves
-        self.last_valid_moves = None
+
+
 
 
 
