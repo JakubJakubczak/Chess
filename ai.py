@@ -21,7 +21,7 @@ class Ai:
         max_eval = float('-inf')
 
         # print(f" All valid moves for {for_white} {engine_copy.all_valid_moves(for_white)}")
-        # moves = self.order_moves(engine_copy.all_valid_moves(for_white), engine_copy, for_white)
+        moves = self.order_moves(moves, engine_copy, for_white)
         # moves = engine_copy.all_valid_moves(for_white)
         # random.shuffle(moves)
         for move in moves:
@@ -126,7 +126,7 @@ class Ai:
         # if not engine.is_king_on_board(for_white)
 
         material_score = self.evaluate_material(engine)
-        # position_score = self.evaluate_position(engine)
+        position_score = self.evaluate_position(engine)
         # king_safety_score = self.evaluate_king_safety(board, color)
         # pawn_structure_score = self.evaluate_pawn_structure(board)
         # center_control_score = self.evaluate_center_control(board)
@@ -134,12 +134,13 @@ class Ai:
 
         # Sum with weights
         return (
-                material_score * 1.0
-                # position_score * 0.5
+                material_score * 1.0 +
+                position_score * 0.4
                 # king_safety_score * 1.5 +
                 # pawn_structure_score * 0.8 +
                 # center_control_score * 0.6 +
                 # mobility_score * 0.3
+                # position_score * 0.5
         )
 
     def evaluate_material(self, engine):

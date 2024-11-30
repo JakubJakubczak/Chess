@@ -59,7 +59,7 @@ class Engine:
 
         return False
     def draw(self):
-        if self.is_threefold_repetition() or self.is_fifty_move_rule() or self.is_insufficient_material():
+        if self.is_threefold_repetition() or self.is_fifty_move_rule() or self.is_insufficient_material() or self.is_stalemate():
             return True
 
         return False
@@ -70,8 +70,8 @@ class Engine:
             return 1
         if checkmate == False:
             return -1
-        elif self.is_stalemate():
-            return 0
+        # elif self.is_stalemate():
+        #     return 0
         elif self.draw():
             print("draw")
             return 0
@@ -354,6 +354,200 @@ class Engine:
         moves.append((x_start, y_start, x_end, y_end, 4))
         moves.append((x_start, y_start, x_end, y_end, 3))
 
+    def generate_pawn_moves(self, x, y, piece, moves, color):
+        # vertical for white pawn
+        if piece == 1 and y > 0 and self.board[y - 1][x] == 0:
+            if y - 1 == 0:
+                self.append_move_as_promotion(x, y, x, y - 1, moves)
+            else:
+                moves.append((x, y, x, y - 1))
+
+            if y == 6 and self.board[y - 2][x] == 0:
+                moves.append((x, y, x, y - 2))
+
+        # vertical for black pawn
+        if piece == -1 and y + 1 < SIZE and self.board[y + 1][x] == 0:
+            if y + 1 == 7:
+                self.append_move_as_promotion(x, y, x, y + 1, moves)
+            else:
+                moves.append((x, y, x, y + 1))
+
+            if y == 1 and self.board[y + 2][x] == 0:
+                moves.append((x, y, x, y + 2))
+
+        # diagonal to left for white pawn
+        if piece == 1 and y > 0 and x > 0 and self.board[y - 1][x - 1] < 0:
+            if y - 1 == 0:
+                self.append_move_as_promotion(x, y, x - 1, y - 1, moves)
+            else:
+                moves.append((x, y, x - 1, y - 1))
+
+        # diagonal to right for white pawn
+        if piece == 1 and y > 0 and x < SIZE - 1 and self.board[y - 1][x + 1] < 0:
+            if y - 1 == 0:
+                self.append_move_as_promotion(x, y, x + 1, y - 1, moves)
+            else:
+                moves.append((x, y, x + 1, y - 1))
+
+        # diagonal to left for black pawn
+        if piece == -1 and y < SIZE - 1 and x > 0 and self.board[y + 1][x - 1] > 0:
+            if y + 1 == 7:
+                self.append_move_as_promotion(x, y, x - 1, y + 1, moves)
+            else:
+                moves.append((x, y, x - 1, y + 1))
+
+        # diagonal to right for black pawn
+        if piece == -1 and y < SIZE - 1 and x < SIZE - 1 and self.board[y + 1][x + 1] > 0:
+            moves.append((x, y, x + 1, y + 1))
+            if y + 1 == 7:
+                self.append_move_as_promotion(x, y, x + 1, y + 1, moves)
+            else:
+                moves.append((x, y, x + 1, y + 1))
+
+        ## EN PASSANT !
+        move = self.info[5]
+        # print(f"move {move}")
+        if move != None:
+            if self.is_pawn_move_of_2_sqr(move[0], move[1], move[2], move[3]):
+                enpassant = self.is_enpassanat_pawn_nearby(x, y, move[2], move[3])
+                if enpassant[0]:
+                    moves.append((x, y, x + enpassant[1], y - color))
+
+    def generate_bishop_moves(self, x, y, moves):
+        direction = [(1, 1), (-1, 1), (1, -1), (-1, -1)]
+        is_white = self.is_white_piece(x, y)
+
+        for dx, dy in direction:
+            for k in range(1, SIZE):
+                x_move = x + k * dx
+                y_move = y + k * dy
+                move = (x, y, x_move, y_move)
+                if not (x_move >= 0 and y_move >= 0 and x_move < SIZE and y_move < SIZE):
+                    continue
+                if self.board[y_move][x_move] != 0:  ## if there is a piece
+                    if self.is_white_piece(x_move, y_move) == is_white:  ## if the piece is the same color
+                        break
+                    else:
+                        moves.append(move)  ## capture
+                        break
+                moves.append(move)
+
+    def generate_knight_moves(self, x, y, moves):
+        direction = [(1, 2), (2, 1), (1, -2), (-1, 2), (-2, 1), (-1, -2), (-2, -1), (2, -1)]
+        is_white = self.is_white_piece(x, y)
+
+        for dx, dy in direction:
+            x_move = x + dx
+            y_move = y + dy
+            move = (x, y, x_move, y_move)
+            if not (x_move >= 0 and y_move >= 0 and x_move < SIZE and y_move < SIZE):
+                continue
+            if self.board[y_move][x_move] != 0:  ## if there is a piece
+                if self.is_white_piece(x_move, y_move) == is_white:  ## if the piece is the same color
+                    continue
+                else:
+                    moves.append(move)
+                    continue
+            moves.append(move)
+    def generate_rook_moves(self, x, y, moves):
+        direction = [(1, 0), (-1, 0), (0, -1), (0, 1)]
+        is_white = self.is_white_piece(x, y)
+
+        for dx, dy in direction:
+            for k in range(1, SIZE):
+                x_move = x + k * dx
+                y_move = y + k * dy
+                move = (x, y, x_move, y_move)
+                if not (x_move >= 0 and y_move >= 0 and x_move < SIZE and y_move < SIZE):
+                    continue
+                if self.board[y_move][x_move] != 0:  ## if there is a piece
+                    if self.is_white_piece(x_move, y_move) == is_white:  ## if the piece is the same color
+                        break
+                    else:
+                        moves.append(move)  ## capture
+                        break
+                moves.append(move)
+    def generate_queen_moves(self, x, y, moves):
+        direction = [(1, 0), (-1, 0), (0, -1), (0, 1), (1, 1), (-1, 1), (1, -1), (-1, -1)]
+        is_white = self.is_white_piece(x, y)
+
+        for dx, dy in direction:
+            for k in range(1, SIZE):
+                x_move = x + k * dx
+                y_move = y + k * dy
+                move = (x, y, x_move, y_move)
+                if not (x_move >= 0 and y_move >= 0 and x_move < SIZE and y_move < SIZE):
+                    continue
+                if self.board[y_move][x_move] != 0:  ## if there is a piece
+                    if self.is_white_piece(x_move, y_move) == is_white:  ## if the piece is the same color
+                        break
+                    else:
+                        moves.append(move)  ## capture
+                        break
+                moves.append(move)
+    def generate_king_moves(self, x, y, moves, checking):
+        direction = [(1, 0), (-1, 0), (0, -1), (0, 1), (1, 1), (-1, 1), (1, -1), (-1, -1)]
+        is_white = self.is_white_piece(x, y)
+
+        for dx, dy in direction:
+            x_move = x + dx
+            y_move = y + dy
+            move = (x, y, x_move, y_move)
+            if not (x_move >= 0 and y_move >= 0 and x_move < SIZE and y_move < SIZE):
+                continue
+            if self.board[y_move][x_move] != 0:  ## if there is a piece
+                if self.is_white_piece(x_move, y_move) == is_white:  ## if the piece is the same color
+                    continue
+                else:
+                    moves.append(move)  ## capture
+                    continue
+            moves.append(move)
+
+        if is_white:
+            row = 7
+        else:
+            row = 0
+
+        if not checking:
+            if self.queen_castling_rights(is_white):
+                if self.is_queen_castling_possible(is_white):
+                    moves.append((x, y, 2, row))
+
+            if self.king_castling_rights(is_white):
+                if self.is_king_castling_possible(is_white):
+                    moves.append((x, y, 6, row))
+
+    def delete_moves_with_check(self, moves, color):
+        copy_board = copy.deepcopy(self.board)
+        copy_info = copy.deepcopy(self.info)
+        valid_moves = []  # Collect only the valid moves
+
+        new_engine = Engine(copy_board, copy_info)
+
+        for move in moves:
+
+            # Make the move on the copy of the board
+            if len(move) == 5:
+                piece, is_white, changes, last2_move = new_engine.move_board(move[0], move[1], move[2], move[3],
+                                                                             move[4])
+            else:
+                piece, is_white, changes, last2_move = new_engine.move_board(move[0], move[1], move[2], move[3])
+
+            if color == 1:
+                new_engine.update_valid_moves_black(True)
+            else:
+                new_engine.update_valid_moves_white(True)
+            # Check if the move results in a check for the current player
+            if not new_engine.is_check(is_white):  # Valid if it doesn't put the king in check
+                valid_moves.append(move)
+            # # Undo the move to restore the original board state
+            new_engine.undo_move_board(move[0], move[1], move[2], move[3], piece, is_white, changes, last2_move)
+            if color == 1:
+                new_engine.undo_valid_moves_black()
+            else:
+                new_engine.undo_valid_moves_white()
+
+        return valid_moves
     def valid_moves(self,x,y, checking = False):
         piece = self.get_figure(x, y)
         moves = []
@@ -365,283 +559,70 @@ class Engine:
 
         color = 1 if self.is_white_piece(x,y) else -1
 
-        ## pawn moves
-        # check if in check or bound
+        ## Ruchy pionkiem
         if abs(piece) == 1:
+            self.generate_pawn_moves(x,y, piece, moves, color)
 
-            # vertical for white pawn
-            if piece == 1 and y > 0 and self.board[y - 1][x] == 0:
-                if y - 1 == 0:
-                    self.append_move_as_promotion(x, y, x, y - 1, moves)
-                else:
-                    moves.append((x, y, x, y - 1))
-
-                if y == 6 and self.board[y - 2][x] == 0:
-                    moves.append((x, y, x, y - 2))
-
-            # vertical for black pawn
-            if piece == -1 and y + 1 < SIZE and self.board[y + 1][x] == 0:
-                if  y + 1 == 7:
-                    self.append_move_as_promotion(x, y, x, y + 1, moves)
-                else:
-                    moves.append((x, y, x, y + 1))
-
-                if y == 1 and self.board[y + 2][x] == 0:
-                    moves.append((x, y, x, y + 2))
-
-            # diagonal to left for white pawn
-            if piece == 1 and y > 0 and x > 0 and self.board[y - 1][x - 1] < 0:
-                if y - 1 == 0:
-                    self.append_move_as_promotion(x, y, x - 1, y - 1, moves)
-                else:
-                    moves.append((x, y, x - 1, y - 1))
-
-            # diagonal to right for white pawn
-            if piece == 1 and y > 0 and x < SIZE - 1 and self.board[y - 1][x + 1] < 0:
-                if y - 1 == 0:
-                    self.append_move_as_promotion(x, y, x + 1, y - 1, moves)
-                else:
-                    moves.append((x, y, x + 1, y - 1))
-
-            # diagonal to left for black pawn
-            if piece == -1 and y < SIZE - 1 and x > 0 and self.board[y + 1][x - 1] > 0:
-                if y + 1 == 7:
-                    self.append_move_as_promotion(x, y, x - 1, y + 1, moves)
-                else:
-                    moves.append((x, y, x - 1, y + 1))
-
-            # diagonal to right for black pawn
-            if piece == -1 and y < SIZE - 1 and x < SIZE - 1 and self.board[y + 1][x + 1] > 0:
-                moves.append((x, y, x + 1, y + 1))
-                if y + 1 == 7:
-                    self.append_move_as_promotion(x, y, x + 1, y + 1, moves)
-                else:
-                    moves.append((x, y, x + 1, y + 1))
-
-            ## EN PASSANT !
-            move = self.info[5]
-            # print(f"move {move}")
-            if move != None:
-                if self.is_pawn_move_of_2_sqr(move[0], move[1], move[2], move[3]):
-                    enpassant = self.is_enpassanat_pawn_nearby(x, y, move[2], move[3])
-                    if enpassant[0]:
-                        moves.append((x, y, x + enpassant[1], y - color))
-
-
-        ## knight moves
-
+        ## Ruchy skoczkiem
         if abs(piece) == 3:
-            direction = [(1,2),(2,1),(1, -2),(-1,2),(-2,1),(-1,-2),(-2,-1),(2,-1)]
-            is_white = self.is_white_piece(x,y)
+            self.generate_knight_moves(x, y, moves)
 
-            for dx, dy in direction:
-                x_move = x + dx
-                y_move = y + dy
-                move = (x, y, x_move, y_move)
-                if not (x_move >= 0 and y_move >= 0 and x_move < SIZE and y_move < SIZE ):
-                    continue
-                if self.board[y_move][x_move]!= 0:  ## if there is a piece
-                    if self.is_white_piece(x_move, y_move) == is_white: ## if the piece is the same color
-                        continue
-                    else:
-                        moves.append(move)
-                        continue
-                moves.append(move)
-
-        ## bishop moves
+        ## Ruchy gońcem
         if abs(piece) == 4:
-            direction = [(1,1),(-1,1),(1,-1),(-1,-1)]
-            is_white = self.is_white_piece(x,y)
+            self.generate_bishop_moves(x, y, moves)
 
-            for dx, dy in direction:
-                for k in range(1, SIZE):
-                    x_move = x + k * dx
-                    y_move = y + k * dy
-                    move = (x, y, x_move, y_move)
-                    if not (x_move >= 0 and y_move >= 0 and x_move < SIZE and y_move < SIZE ):
-                        continue
-                    if self.board[y_move][x_move]!= 0:  ## if there is a piece
-                        if self.is_white_piece(x_move, y_move) == is_white: ## if the piece is the same color
-                            break
-                        else:
-                            moves.append(move) ## capture
-                            break
-                    moves.append(move)
-
-        ## rook moves
+        ## Ruchy wieżą
         if abs(piece) == 5:
-            direction = [(1, 0), (-1, 0), (0, -1), (0, 1)]
-            is_white = self.is_white_piece(x, y)
+            self.generate_rook_moves(x, y, moves)
 
-            for dx, dy in direction:
-                for k in range(1, SIZE):
-                    x_move = x + k * dx
-                    y_move = y + k * dy
-                    move = (x, y, x_move, y_move)
-                    if not (x_move >= 0 and y_move >= 0 and x_move < SIZE and y_move < SIZE):
-                        continue
-                    if self.board[y_move][x_move] != 0:  ## if there is a piece
-                        if self.is_white_piece(x_move, y_move) == is_white:  ## if the piece is the same color
-                            break
-                        else:
-                            moves.append(move)  ## capture
-                            break
-                    moves.append(move)
+        ## Ruchy królową
+        if abs(piece) == 9:
+            self.generate_queen_moves(x, y, moves)
 
-        ## king moves
+        ## Ruchy królem(wraz z roszadą)
         # add castling
         if abs(piece) == 2:
-            direction = [(1, 0), (-1, 0), (0, -1), (0, 1), (1,1),(-1,1),(1,-1),(-1,-1)]
-            is_white = self.is_white_piece(x, y)
+            self.generate_king_moves(x, y, moves, checking)
 
-            for dx, dy in direction:
-                x_move = x +  dx
-                y_move = y +  dy
-                move = (x, y, x_move, y_move)
-                if not (x_move >= 0 and y_move >= 0 and x_move < SIZE and y_move < SIZE):
-                    continue
-                if self.board[y_move][x_move] != 0:  ## if there is a piece
-                    if self.is_white_piece(x_move, y_move) == is_white:  ## if the piece is the same color
-                        continue
-                    else:
-                        moves.append(move)  ## capture
-                        continue
-                moves.append(move)
-
-            if is_white:
-                row = 7
-            else:
-                row = 0
-
-            if not checking:
-                if self.queen_castling_rights(is_white):
-                    if self.is_queen_castling_possible(is_white):
-                        moves.append((x, y, 2, row))
-
-
-                if self.king_castling_rights(is_white):
-                    if self.is_king_castling_possible(is_white):
-                        moves.append((x, y, 6, row))
-
-
-
-
-        ## queen moves
-        if abs(piece) == 9:
-            direction = [(1, 0), (-1, 0), (0, -1), (0, 1), (1,1),(-1,1),(1,-1),(-1,-1)]
-            is_white = self.is_white_piece(x, y)
-
-            for dx, dy in direction:
-                for k in range(1, SIZE):
-                    x_move = x + k * dx
-                    y_move = y + k * dy
-                    move = (x, y, x_move, y_move)
-                    if not (x_move >= 0 and y_move >= 0 and x_move < SIZE and y_move < SIZE):
-                        continue
-                    if self.board[y_move][x_move] != 0:  ## if there is a piece
-                        if self.is_white_piece(x_move, y_move) == is_white:  ## if the piece is the same color
-                            break
-                        else:
-                            moves.append(move)  ## capture
-                            break
-                    moves.append(move)
-
-            # Handle king safety by checking if any moves put the king in check
+        # Usuwanie tych ruchów, po których wykonaniu król jest szachowany.
         if not checking:
-            copy_board = copy.deepcopy(self.board)
-            copy_info = copy.deepcopy(self.info)
-            valid_moves = []  # Collect only the valid moves
-
-            new_engine = Engine(copy_board, copy_info)
-
-            for move in moves:
-
-                # Make the move on the copy of the board
-                if len(move) == 5:
-                    piece, is_white, changes, last2_move = new_engine.move_board(move[0], move[1], move[2], move[3], move[4])
-                else:
-                    piece,is_white,changes, last2_move = new_engine.move_board(move[0], move[1], move[2], move[3])
-
-                if color == 1:
-                    new_engine.update_valid_moves_black(True)
-                else:
-                    new_engine.update_valid_moves_white(True)
-                # Check if the move results in a check for the current player
-                if not new_engine.is_check(is_white):  # Valid if it doesn't put the king in check
-                    valid_moves.append(move)
-                # # Undo the move to restore the original board state
-                new_engine.undo_move_board(move[0], move[1], move[2], move[3], piece, is_white, changes, last2_move)
-                if color == 1:
-                    new_engine.undo_valid_moves_black()
-                else:
-                    new_engine.undo_valid_moves_white()
+            valid_moves = self.delete_moves_with_check(moves, color)
 
             return valid_moves
 
         return moves
 
-    def move_board(self, start_x, start_y, end_x, end_y, promotion = None):
-        is_white = self.is_white_piece(start_x, start_y)
-        piece_from = self.get_figure(start_x, start_y)
-        piece_to = self.get_figure(end_x, end_y)
+    def castle(self, start_x, start_y, end_x, color):
+        if start_x - end_x == 2:  # Castling long
+            self.board[start_y][2] = 2 * color
+            self.board[start_y][4] = 0
+            self.board[start_y][3] = 5 * color
+            self.board[start_y][0] = 0
+        elif start_x - end_x == -2:  # Castling short
+            self.board[start_y][6] = 2 * color
+            self.board[start_y][4] = 0
+            self.board[start_y][5] = 5 * color
+            self.board[start_y][7] = 0
 
-        color = 1 if is_white else -1
+    def promotion(self, start_x, start_y, end_x, end_y, color, promotion):
+        self.info[6] = True
+        self.board[end_y][end_x] = promotion * color
+        self.board[start_y][start_x] = 0
 
-        prev_promotion = self.info[6]
-        prev_enpassant = self.info[7]
-        self.info[6] = False # promotio n
-        self.info[7] = False # enpassant move
+    def enpassant(self, start_x, start_y, end_x, end_y, color, piece_from):
+        self.board[end_y][end_x] = piece_from
+        self.board[start_y][start_x] = 0
+        self.board[end_y + color][end_x] = 0
+        self.info[7] = True
 
-        prev_50 = self.update_fifty_move_rule(start_x, start_y, end_x, end_y)
-        prev_score = self.info[10]
-
-        # [queen_castling_rigths, king_castling_rigths, prev_50_move, promotion, enpassant]
-        changes = [False, False, prev_50, prev_promotion, prev_enpassant, prev_score]
-
-        if self.is_it_capture(end_x, end_y):
-            self.info[10] -= piece_to
-
-
-        # sprawdzić czy to roszada
-        if self.is_castling(start_x, start_y, end_x, end_y, piece_from):
-            if start_x - end_x == 2:  # Castling long
-                self.board[start_y][2] = 2 * color
-                self.board[start_y][4] = 0
-                self.board[start_y][3] = 5 * color
-                self.board[start_y][0] = 0
-            elif start_x - end_x == -2:  # Castling short
-                self.board[start_y][6] = 2 * color
-                self.board[start_y][4] = 0
-                self.board[start_y][5] = 5 * color
-                self.board[start_y][7] = 0
-
-        elif self.is_pawn_promotion(start_x, start_y, end_x, end_y):
-            self.info[6] = True
-            self.board[end_y][end_x] = promotion * color
-            self.board[start_y][start_x] = 0
-
-        elif self.is_enpassant(start_x, start_y, end_x, end_y, piece_from):
+    def regular_move(self,start_x, start_y, end_x, end_y, piece_from):
+        if piece_from != 0:
             self.board[end_y][end_x] = piece_from
             self.board[start_y][start_x] = 0
-            self.board[end_y + color][end_x] = 0
-            self.info[7] = True
-        else:
-            if piece_from != 0:
-                self.board[end_y][end_x] = piece_from
-                self.board[start_y][start_x] = 0
 
-        ## EN_PASSANT
-
-
-
-        last2_move = self.info[4]
-        last_move = self.info[5] # now last move is previous move
-        self.info[4] = last_move
-        self.info[5] = (start_x, start_y, end_x, end_y)
-
+    def update_info_castling_rights(self, start_x, end_x, changes, is_white, piece_from, piece_to):
         # sprawdzić czy to ruch królem lub którąś z wież lub czy wieża jest zbita
         if abs(piece_from) == 2:
-
 
             if self.queen_castling_rights(is_white):
                 self.change_queen_castling_rights(is_white, False)
@@ -651,14 +632,13 @@ class Engine:
                 self.change_king_castling_rights(is_white, False)
                 changes[1] = True
 
-
                 # ruch wieżą
         if abs(piece_from) == 5:
-            if start_x == 0: # left_rook
+            if start_x == 0:  # left_rook
                 if self.queen_castling_rights(is_white):
                     self.change_queen_castling_rights(is_white, False)
                     changes[0] = True
-            if start_x == 7: # right_rook
+            if start_x == 7:  # right_rook
                 if self.king_castling_rights(is_white):
                     self.change_king_castling_rights(is_white, False)
                     changes[1] = True
@@ -673,10 +653,46 @@ class Engine:
                 if self.king_castling_rights(is_white):
                     self.change_king_castling_rights(is_white, False)
                     changes[1] = True
+    def move_board(self, start_x, start_y, end_x, end_y, promotion = None):
+        is_white = self.is_white_piece(start_x, start_y)
+        piece_from = self.get_figure(start_x, start_y)
+        piece_to = self.get_figure(end_x, end_y)
+
+        color = 1 if is_white else -1
+
+        prev_promotion = self.info[6]
+        prev_enpassant = self.info[7]
+        self.info[6] = False # promotion
+        self.info[7] = False # enpassant move
+
+        prev_50 = self.update_fifty_move_rule(start_x, start_y, end_x, end_y)
+        prev_score = self.info[10]
+
+        # [queen_castling_rigths, king_castling_rigths, prev_50_move, promotion, enpassant]
+        changes = [False, False, prev_50, prev_promotion, prev_enpassant, prev_score]
+
+        if self.is_it_capture(end_x, end_y):
+            self.info[10] -= piece_to
 
 
+        if self.is_castling(start_x, start_y, end_x, end_y, piece_from):
+            self.castle(start_x, start_y, end_x, color)
+
+        elif self.is_pawn_promotion(start_x, start_y, end_x, end_y):
+            self.promotion(start_x, start_y, end_x, end_y, color, promotion)
+
+        elif self.is_enpassant(start_x, start_y, end_x, end_y, piece_from):
+            self.enpassant(start_x, start_y, end_x, end_y, color, piece_from)
+        else:
+            self.regular_move(start_x, start_y, end_x, end_y, piece_from)
 
 
+        last2_move = self.info[4]
+        last_move = self.info[5] # now last move is previous move
+        self.info[4] = last_move
+        self.info[5] = (start_x, start_y, end_x, end_y)
+
+        self.update_info_castling_rights(start_x, end_x, changes, is_white, piece_from, piece_to)
 
         return piece_to, is_white, changes, last2_move
 
@@ -712,14 +728,40 @@ class Engine:
         self.valid_moves_black = self.last_valid_moves_black
         self.last_valid_moves_black = None
 
-    def undo_move_board(self, start_x, start_y, end_x, end_y, piece, is_white,changes, last2_move):
-        ## UNDO ALL THAT HAPPANED IN MOVE, for example castling rights
+
+
+    def undo_castlig_right_changes(self, changes, is_white):
         if changes[0]:
             self.change_queen_castling_rights(is_white, True)
         if changes[1]:
             self.change_king_castling_rights(is_white, True)
 
-        self.info[5] = self.info[4]
+    def uncastle(self, start_x, start_y, end_x, end_y, color):
+        if start_x - end_x == 2:  # Castling long
+            self.board[start_y][0] = 5 * color
+            self.board[start_y][2] = 0
+            self.board[start_y][3] = 0
+            self.board[start_y][4] = 2 * color
+        elif start_x - end_x == -2:  # Castling short
+            self.board[start_y][4] = 2 * color
+            self.board[start_y][5] = 0
+            self.board[start_y][6] = 0
+            self.board[start_y][7] = 5 * color
+
+    def undo_enpassant(self,  start_x, start_y, end_x, end_y, color, piece_from):
+        self.board[end_y][end_x] = 0
+        self.board[start_y][start_x] = piece_from
+        self.board[end_y + color][end_x] = -color
+
+    def undo_regular_move(self, start_x, start_y, end_x, end_y, color, piece_from, piece):
+        piece_from = self.get_figure(end_x, end_y)
+        if piece_from != 0:
+            self.board[start_y][start_x] = piece_from
+            self.board[end_y][end_x] = piece
+    def undo_move_board(self, start_x, start_y, end_x, end_y, piece, is_white,changes, last2_move):
+        self.undo_castlig_right_changes(changes, is_white)
+
+        self.info[5] = self.info[4] ## cofanie aktualnego ruchu na ostatni ruchu
         self.info[4] = last2_move
 
 
@@ -728,37 +770,16 @@ class Engine:
         piece_from = self.get_figure(end_x, end_y)
 
         if self.is_castling(start_x, start_y, end_x, end_y, piece_from):
-            if start_x - end_x == 2:  # Castling long
-                self.board[start_y][0] = 5 * color
-                self.board[start_y][2] = 0
-                self.board[start_y][3] = 0
-                self.board[start_y][4] = 2  * color
-            elif start_x - end_x == -2:  # Castling short
-                self.board[start_y][4] = 2  * color
-                self.board[start_y][5] = 0
-                self.board[start_y][6] = 0
-                self.board[start_y][7] = 5  * color
+            self.uncastle(start_x, start_y, end_x, end_y, color)
         elif self.info[7]: # enpssant
-            self.board[end_y][end_x] = 0
-            self.board[start_y][start_x] = piece_from
-            self.board[end_y + color][end_x] = -color
-
+            self.undo_enpassant(start_x, start_y, end_x, end_y, color, piece_from)
         else:
-            piece_from = self.get_figure(end_x, end_y)
-            if piece_from != 0:
-                self.board[start_y][start_x] = piece_from
-                self.board[end_y][end_x] = piece
+           self.undo_regular_move(start_x, start_y, end_x, end_y, color, piece_from, piece)
 
-        # undo promotion
-        # undo enpassant info
-        # undo fifty-move rule
-        self.info[6] = changes[3]
-        self.info[7] = changes[4]
-        self.info[9] = changes[2]
-        self.info[10] = changes[5]
-
-
-
+        self.info[6] = changes[3] # cofanie promocji
+        self.info[7] = changes[4] # cofanie enpassant
+        self.info[9] = changes[2] # cofanie zasady 50 ruchow
+        self.info[10] = changes[5] # cofanie score
 
 
     def is_white_piece(self, x, y):
