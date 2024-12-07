@@ -12,27 +12,19 @@ class Ai:
 
 
     def negamax(self, depth, color, engine_copy, alpha, beta, moves):
-         ### if engine_copy.game_over(): ciąć ścieżkę jeśli wiadoomo, że koniec gry
-
         if depth == 0:
-            return color * self.evaluate(engine_copy, color), self.best_move
+            return color * self.evaluate(engine_copy), self.best_move
 
         for_white = True if color == 1 else False
         max_eval = float('-inf')
 
-        # print(f" All valid moves for {for_white} {engine_copy.all_valid_moves(for_white)}")
-        moves = self.order_moves(moves, engine_copy, for_white)
-        # moves = engine_copy.all_valid_moves(for_white)
-        # random.shuffle(moves)
+        moves = self.order_moves(moves, engine_copy)
         for move in moves:
             start_x, start_y, end_x, end_y, *promotion = move
             promotion_type = promotion[0] if promotion else None
 
             piece, is_white, changes, last2_move = engine_copy.move_board(start_x, start_y, end_x, end_y, promotion_type)
-            if for_white is True:
-                engine_copy.update_valid_moves_black(True)
-            else:
-                engine_copy.update_valid_moves_white(True)
+            engine_copy.update_valid_moves(True)
 
             next_moves  = engine_copy.valid_moves_black if for_white is True else engine_copy.valid_moves_white
 
@@ -41,10 +33,7 @@ class Ai:
 
             engine_copy.undo_move_board(start_x, start_y, end_x, end_y, piece, is_white, changes, last2_move)
 
-            if for_white is True:
-                engine_copy.undo_valid_moves_black()
-            else:
-                engine_copy.undo_valid_moves_white()
+            engine_copy.update_valid_moves(True)
 
             if evaluation > max_eval:
                 max_eval = evaluation
@@ -52,11 +41,6 @@ class Ai:
                     self.best_move = move
 
             self.iteration += 1
-            # print(f" Iteratiom {self.iteration}, move {move}, evaluation {evaluation}. best move{self.best_move}\n")
-            #
-            # print(f"{engine_copy.board}")
-
-
 
             alpha = max(alpha, max_eval)
             if alpha >= beta:
@@ -86,62 +70,35 @@ class Ai:
 
         return random_move
 
-    def order_moves(self, moves, engine_copy, for_white):
-        # eval_moves = []
-        # for move in moves:
-        #     start_x, start_y, end_x, end_y, *promotion = move
-        #     # Execute move to evaluate its potential
-        #     piece, is_white, changes, last2_move = engine_copy.move_board(start_x, start_y, end_x, end_y,
-        #                                                                   promotion[0] if promotion else None)
-        #     eval_move = self.evaluate(engine_copy)  # Use evaluation function for move ordering
-        #     eval_moves.append((eval_move, move))
-        #     engine_copy.undo_move_board(start_x, start_y, end_x, end_y, piece, is_white, changes, last2_move)
-        #
-        # # Sort moves by score (descending for maximizing)
-        # return [move for _, move in sorted(eval_moves, key=lambda x: x[0])]
+    def order_moves(self, moves, engine_copy):
         eval_moves = []
         for move in moves:
             start_x, start_y, end_x, end_y, *promotion = move
 
-            # Quick heuristic: prioritize captures and promotions
             promotion_bonus = 10 if promotion else 0
             capture_bonus = engine_copy.get_figure(end_x, end_y)
 
-            # Add to eval_moves with heuristic score
             eval_moves.append((capture_bonus + promotion_bonus, move))
 
-        # Sort moves by heuristic score (descending for maximizing)
+        # Zwracnie ruchów posortowanych malejąco
         return [move for _, move in sorted(eval_moves, key=lambda x: x[0], reverse=True)]
 
     # def update_copy_engine(self, engine):
     #     self.copy_engine = copy.deepcopy(engine)
 
-    def evaluate(self, engine, color = None):
-
-        # if engine.checkmate():
-        #     return MATE
-        #
-        # for_white = True if color == 1 else False
-        #
-        # if not engine.is_king_on_board(for_white)
-
+    def evaluate(self, engine):
         material_score = self.evaluate_material(engine)
         position_score = self.evaluate_position(engine)
-        # king_safety_score = self.evaluate_king_safety(board, color)
-        # pawn_structure_score = self.evaluate_pawn_structure(board)
-        # center_control_score = self.evaluate_center_control(board)
-        # mobility_score = self.evaluate_mobility(board)
+        mobility_score = self.evaluate_mobility(engine)
 
-        # Sum with weights
         return (
-                material_score * 1.0 +
-                position_score * 0.4
-                # king_safety_score * 1.5 +
-                # pawn_structure_score * 0.8 +
-                # center_control_score * 0.6 +
-                # mobility_score * 0.3
-                # position_score * 0.5
+                material_score * 1.2 +
+                position_score * 0.5 +
+                mobility_score * 0.1
         )
+
+    def evaluate_mobility(self, engine):
+        return len(engine.valid_moves_white) - len(engine.valid_moves_black)
 
     def evaluate_material(self, engine):
         piece_values = {1: 1, 2: 100, 3: 3, 4: 3, 5: 5, 9: 9, -1: -1, -2: -100, -3: -3, -4: -3, - 5: -5, -9: -9,}
@@ -185,7 +142,7 @@ class Ai:
                 color = 1 if for_white else -1
                 position_value = self.piece_square_score(piece, row, col, color)
                 if piece!= 0:
-                    total_value = piece_abs + position_value ######## piece jest zalezne od koloru a position_value jedynie od położenia jak to polaczyc
+                    total_value = piece_abs + position_value
                     score += total_value if engine.is_white_piece(row, col ) else -total_value
 
 
@@ -200,8 +157,6 @@ class Ai:
     def evaluate_center_control(self, board):
         pass
 
-    def evaluate_mobility(self, board, color):
-        pass
 
     pawn_table = [
         [0, 0, 0, 0, 0, 0, 0, 0],

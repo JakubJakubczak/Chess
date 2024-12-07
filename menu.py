@@ -25,12 +25,12 @@ class Menu_own:
         image_size = canvas_menu.bbox(background)
         end_of_backgroundY = image_size[3]
 
-        game_Name = "CHESS GAME"
+        game_Name = "SZACHY"
         font_size = 25
         game_label = canvas_menu.create_text(GAME_WIDTH / 2, 0 + font_size, text=game_Name, font=("Roboto:", font_size),
                                         fill="green")
 
-        button1 = Button(self.menu_window, text="Testowanie",
+        button1 = Button(self.menu_window, text="Nowa gra",
                          font=("Roboto"),
                          command=self.start,
                          fg="#00FF00",
@@ -46,7 +46,7 @@ class Menu_own:
                          borderwidth=5,
                          relief="raised")
 
-        button2 = Button(self.menu_window, text="Exit",
+        button2 = Button(self.menu_window, text="Wyjscie",
                          font=("Roboto"),
                          command=self.exit,
                          fg="#00FF00",

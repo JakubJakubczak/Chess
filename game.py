@@ -120,10 +120,7 @@ class Game:
 
     def move(self, drag_data, x_start, y_start, x_end, y_end, promotion_val = None):
         self.board.engine.move_board(x_start, y_start, x_end, y_end, promotion_val)
-        if self.board.white_turn is True:
-            self.board.engine.update_valid_moves_black()
-        else:
-            self.board.engine.update_valid_moves_white()
+        self.board.engine.update_valid_moves()
 
         self.figures.move_images(drag_data, x_start, y_start, x_end, y_end)
 

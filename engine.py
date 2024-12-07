@@ -533,19 +533,14 @@ class Engine:
             else:
                 piece, is_white, changes, last2_move = new_engine.move_board(move[0], move[1], move[2], move[3])
 
-            if color == 1:
-                new_engine.update_valid_moves_black(True)
-            else:
-                new_engine.update_valid_moves_white(True)
+            new_engine.update_valid_moves(True)
+
             # Check if the move results in a check for the current player
             if not new_engine.is_check(is_white):  # Valid if it doesn't put the king in check
                 valid_moves.append(move)
             # # Undo the move to restore the original board state
             new_engine.undo_move_board(move[0], move[1], move[2], move[3], piece, is_white, changes, last2_move)
-            if color == 1:
-                new_engine.undo_valid_moves_black()
-            else:
-                new_engine.undo_valid_moves_white()
+            new_engine.update_valid_moves(True)
 
         return valid_moves
     def valid_moves(self,x,y, checking = False):

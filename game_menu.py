@@ -49,6 +49,9 @@ class Game_menu:
         self.white_pieces = 0
         self.black_pieces = 0
         self.images = []
+
+        self.evaluation_label = None
+        self.score_of_game = None
     def display_history(self, history):
         self.move_history_text.config(state=NORMAL)  # Allow editing
         self.move_history_text.delete(1.0, END)  # Clear current text
@@ -84,15 +87,21 @@ class Game_menu:
         y = SMALL_PIECE_SIZE + (pady)
         x = padx
 
-        score_of_game = Label(self.canvas_game_menu_1, text=f"Punkty: {score}", font=("Arial", 20), fg = "blue")
-        score_of_game.place(x = x, y = y)
+        if self.score_of_game is not None:
+            self.score_of_game.destroy()
+
+        self.score_of_game = Label(self.canvas_game_menu_1, text=f"Punkty: {score}", font=("Arial", 20), fg = "blue")
+        self.score_of_game.place(x = x, y = y)
 
     def display_eval(self, eval):
         y = 600
         x = 70
 
-        evaluation = Label(self.canvas_game_menu_2, text=f"Ocena: {eval}", font=("Arial", 20), fg="blue")
-        evaluation.place(x=x, y=y)
+        if self.evaluation_label is not None:
+            self.evaluation_label.destroy()
+
+        self.evaluation_label = Label(self.canvas_game_menu_2, text=f"Ocena: {eval}", font=("Arial", 20), fg="blue")
+        self.evaluation_label.place(x=x, y=y)
 
     def add_piece_to_player(self, for_white, tags):
         start_coords = (int(tags[0]), int(tags[1]))

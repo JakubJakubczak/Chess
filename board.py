@@ -32,7 +32,9 @@ class Board:
         promotion = False
         enpassant = None
         self.promotion_choice = None
-        self.info = [self.white_queen_castling_right, self.white_king_castling_right, self.black_queen_castling_right, self.black_king_castling_right,  last_move, move, promotion, enpassant, self.threefold_repetition, self.fifty_move_rule, self.score]
+        self.info = [self.white_queen_castling_right, self.white_king_castling_right, self.black_queen_castling_right,
+                     self.black_king_castling_right,  last_move, move, promotion, enpassant, self.threefold_repetition,
+                     self.fifty_move_rule, self.score]
 
         self.game = game
         self.frame = frame
@@ -108,11 +110,11 @@ class Board:
 
     def choose_piece(self):
         popup = Toplevel(self.frame)
-        popup.title("Choose Piece for Promotion")
+        popup.title("Promocja")
         popup.geometry("300x200")
         popup.transient(self.frame)  # Keeps it on top of the main window
 
-        label = Label(popup, text="Enter what you want to promote to:")
+        label = Label(popup, text="Wybierz figurę do promocji:")
         label.pack(pady=10)
 
         self.promotion_choice = None
@@ -121,10 +123,10 @@ class Board:
             popup.destroy()
 
         # Buttons for each piece
-        Button(popup, text="Queen (Q)", command=lambda: set_piece(9)).pack(pady=5)
-        Button(popup, text="Rook (R)", command=lambda: set_piece(5)).pack(pady=5)
-        Button(popup, text="Bishop (B)", command=lambda: set_piece(4)).pack(pady=5)
-        Button(popup, text="Knight (N)", command=lambda: set_piece(3)).pack(pady=5)
+        Button(popup, text="Hetman (Q)", command=lambda: set_piece(9)).pack(pady=5)
+        Button(popup, text="Wieża (R)", command=lambda: set_piece(5)).pack(pady=5)
+        Button(popup, text="Goniec (B)", command=lambda: set_piece(4)).pack(pady=5)
+        Button(popup, text="Skoczek (N)", command=lambda: set_piece(3)).pack(pady=5)
 
         # Pause the program until the popup window is closed
         popup.wait_window()

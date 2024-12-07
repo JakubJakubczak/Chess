@@ -162,14 +162,11 @@ class Figures:
         return [figure_coords_x, figure_coords_y]
 
     def display_figures(self, first_cordinates, canvas, board):
-        ##### dict that will store position and figure
-
         for i in range(SIZE):
             for j in range(SIZE):
                 if board[i][j] != 0:
-                    tag = (j, i)  # Example tag based on position
+                    tag = (j, i)  # tag bazujący na pozycji początkowej
                     self.canvas_images[i][j] = canvas.create_image(first_cordinates[0] + (j * SPACE_SIZE), first_cordinates[1] + (i * SPACE_SIZE), image=self.images[i][j], tags= tag)
-                    # Bring piece image to the top to ensure it is above the board
                     canvas.tag_raise(self.canvas_images[i][j])
 
         return self.canvas_images
@@ -179,11 +176,8 @@ class Figures:
         for i in range(SIZE):
             for j in range(SIZE):
                 if self.board.board[i][j] != 0:
-
-                    # Add a specific tag to all piece images
                     canvas.addtag_withtag("piece", self.canvas_images[i][j])
-
-                    canvas.tag_bind(self.canvas_images[i][j],  "<ButtonPress-1>", dragger.drag_start) ######## DO IT
+                    canvas.tag_bind(self.canvas_images[i][j],  "<ButtonPress-1>", dragger.drag_start)
                     canvas.tag_bind(self.canvas_images[i][j],  "<B1-Motion>", dragger.drag_motion)
                     canvas.tag_bind(self.canvas_images[i][j], "<ButtonRelease-1>", dragger.drag_stop)
 
