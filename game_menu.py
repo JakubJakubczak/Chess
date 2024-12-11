@@ -36,10 +36,10 @@ class Game_menu:
         pady = 50
 
         button1.place(x=(GAME_MENU_2WIDTH) // 2 - width_button1 * 100,
-                      y=GAME_MENU_2HEIGHT // 2 + 15 * height_button1 )  # Adjust the coordinates (x, y) as needed
+                      y=GAME_MENU_2HEIGHT // 2 + 15 * height_button1 )
 
         button2.place(x=(GAME_MENU_2WIDTH) / 2 - width_button2 * 100,
-                      y=GAME_MENU_2HEIGHT // 2 + 15 * ( height_button1 + height_button2) + pady)  # Adjust the coordinates (x, y) as needed
+                      y=GAME_MENU_2HEIGHT // 2 + 15 * ( height_button1 + height_button2) + pady)
 
         self.move_history_text = Text(self.canvas_game_menu_2, width=20, height=20, wrap="word")
         self.move_history_text.tag_configure("center", justify="center")
@@ -53,15 +53,15 @@ class Game_menu:
         self.evaluation_label = None
         self.score_of_game = None
     def display_history(self, history):
-        self.move_history_text.config(state=NORMAL)  # Allow editing
-        self.move_history_text.delete(1.0, END)  # Clear current text
-        # Display moves, two moves per line with numbering
+        self.move_history_text.config(state=NORMAL)
+        self.move_history_text.delete(1.0, END)
+
         formatted_moves = ""
         for i, move in enumerate(history):
             if i % 2 == 0:
-                formatted_moves += f"{(i // 2) + 1}. "  # Move number for each new turn
+                formatted_moves += f"{(i // 2) + 1}. "
             formatted_moves += f"{move} "
-        self.move_history_text.insert(END, formatted_moves.strip())  # Insert updated moves
+        self.move_history_text.insert(END, formatted_moves.strip())
         self.move_history_text.tag_add("center", 1.0, END)
         self.move_history_text.config(state=DISABLED)
 
@@ -117,14 +117,11 @@ class Game_menu:
             x = GAME_MENU_1WIDTH - SMALL_PIECE_SIZE * self.white_pieces - padx
             self.white_pieces += 1
 
-
         piece = self.start_coordinates_to_figure(start_coords)
 
         image = ImageTk.PhotoImage(Image.open(f"images/small/{piece}.png"))
         self.images.append(image)
         self.canvas_game_menu_1.create_image(x, y, image=image)
-
-
 
     def start_coordinates_to_figure(self, coord):
         if coord[1] == 1:

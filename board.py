@@ -3,14 +3,6 @@ from tkinter import *
 from Const import *
 from engine import *
 import numpy as np
-###############
-## NOTATION ##
-## QUEEN - 9
-## ROOK - 5
-## BISHOP - 4
-## KNIGHT - 3
-## KING - 2
-## PAWN - 1
 
 class Board:
     def __init__(self, frame, game):
@@ -26,7 +18,6 @@ class Board:
         self.black_king_castling_right = True
         self.score = 0
 
-        # dodać o en_passant też pewnie
         move = None
         last_move = None
         promotion = False
@@ -59,9 +50,7 @@ class Board:
             [5, 3, 4, 9, 2, 4, 3, 5]
         ]
 
-
         self.engine = Engine(self.board, self.info)
-
 
     def display_board(self):
         for row in range(0, SIZE):
@@ -89,30 +78,25 @@ class Board:
             rank_label = Label(self.canvas_label1, text=str(8 - rank), font=("Arial", 12))
             letter_height = rank_label.winfo_height()
             letter_width = rank_label.winfo_width()
-            rank_label.place(x=LABEL_VERTUCAL_WIDTH - 10 * letter_width, y= rank * SPACE_SIZE + SPACE_SIZE // 2 - 5 * letter_height) # - SPACE_SIZE // 2
+            rank_label.place(x=LABEL_VERTUCAL_WIDTH - 10 * letter_width, y= rank * SPACE_SIZE + SPACE_SIZE // 2 - 5 * letter_height)
 
         for file in range(8):
-            file_label = Label(self.canvas_label2, text=chr(file + 97), font=("Arial", 12))  # 97 is ASCII for 'a'
+            file_label = Label(self.canvas_label2, text=chr(file + 97), font=("Arial", 12))
             letter_width = file_label.winfo_width()
-            file_label.place(x=file * SPACE_SIZE + SPACE_SIZE // 2 - 5 * letter_width, y = 0) # - SPACE_SIZE // 2
+            file_label.place(x=file * SPACE_SIZE + SPACE_SIZE // 2 - 5 * letter_width, y = 0)
 
         self.canvas_label1.place(x=0, y=100)
         self.canvas_label2.place(x=50, y=700)
-
-
 
     def draw_game(self):
         self.result = -1 if self.white_turn else 1
         self.game_on = False
 
-    def end_game(self):
-        pass
-
     def choose_piece(self):
         popup = Toplevel(self.frame)
         popup.title("Promocja")
         popup.geometry("300x200")
-        popup.transient(self.frame)  # Keeps it on top of the main window
+        popup.transient(self.frame)
 
         label = Label(popup, text="Wybierz figurę do promocji:")
         label.pack(pady=10)
@@ -122,37 +106,23 @@ class Board:
             self.promotion_choice = value
             popup.destroy()
 
-        # Buttons for each piece
         Button(popup, text="Hetman (Q)", command=lambda: set_piece(9)).pack(pady=5)
         Button(popup, text="Wieża (R)", command=lambda: set_piece(5)).pack(pady=5)
         Button(popup, text="Goniec (B)", command=lambda: set_piece(4)).pack(pady=5)
         Button(popup, text="Skoczek (N)", command=lambda: set_piece(3)).pack(pady=5)
 
-        # Pause the program until the popup window is closed
         popup.wait_window()
 
         return self.promotion_choice
-    def move_pgn(self, string):
-        pass
 
     def change_move_to_LAN(self, x_start, y_start, x_end, y_end):
         move_lan = f"{chr(x_start + 97)}{8 - y_start}{chr(x_end + 97)}{8 - y_end}"
-
         return move_lan
 
-    def change_move_to_SAN(self, x_start, y_start, x_end, y_end):
-        pass
     def add_to_history(self,x_start, y_start, x_end, y_end):
-        # is it castling
-        # is it en passant
-        # is it promotion
-        # is it beating
-        # is it only possible move
         move_lan = self.change_move_to_LAN(x_start, y_start, x_end, y_end)
         self.history.append(move_lan)
 
-    def save_pgn(self, filename, metadata):
-        pass
     def is_Game_On(self):
         if self.engine.game_over() == None:
             return True
@@ -162,7 +132,6 @@ class Board:
             self.result = self.engine.game_over()
             return False
 
-
     def is_white_turn(self):
         if self.white_turn:
             return True
@@ -170,10 +139,9 @@ class Board:
             return False
 
     def get_result(self):
-        return self.result  # Return the result (could be checkmate, stalemate, etc.)
+        return self.result
 
     def check_game_state(self):
-        # Check the game state in the Board class and inform the Game class
         if not self.is_Game_On():
             self.game.handle_game_end()
 

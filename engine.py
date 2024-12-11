@@ -51,7 +51,6 @@ class Engine:
         return None
 
     def is_stalemate(self):
-        ## check if it will generate bugs, probalby turns required
         if self.valid_moves_white == [] and not self.is_check(WHITE):
             return True
         if self.valid_moves_black == [] and not self.is_check(BLACK):
@@ -64,25 +63,21 @@ class Engine:
 
         return False
 
+    def is_threefold_repetition(self):
+        pass
+
     def game_over(self):
         checkmate = self.checkmate()
         if checkmate == True:
             return 1
         if checkmate == False:
             return -1
-        # elif self.is_stalemate():
-        #     return 0
         elif self.draw():
             print("draw")
             return 0
         else:
             return None
-    def is_threefold_repetition(self):
-        # jeżeli 3 razy obie strony wykonały tą samą sekwencje
-        pass
 
-    def is_move_the_same(self):
-        pass
     def is_fifty_move_rule(self):
         if self.info[9] >= 100:
             print("50 powtorzen")
@@ -106,15 +101,7 @@ class Engine:
 
         return prev
 
-    def is_move_without_change_of_material(self):
-        pass
-
     def is_insufficient_material(self):
-        # jeżeli na boardzie obie strony mają materiał niewystarczjaący do matowania, według FIDE są to pozycje:
-        # KB vs K
-        # KN vs K
-        # KNN vs K
-
         pieces_white = []
         pieces_black = []
         white_sum = 0
@@ -131,12 +118,11 @@ class Engine:
                         pieces_black.append(piece)
                         black_sum += piece
 
-                if white_sum > 8 or abs(black_sum) > 8: # 8 ponieważ KNN dają sume największą czyli 8 bo 2+3+3
+                if white_sum > 8 or abs(black_sum) > 8: # 8, ponieważ KNN dają sume największą
                     return False
 
         # KB vs K
         # KN vs K
-
         if len(pieces_white) == 2 and len(pieces_black) == 1:
             if 4 in pieces_white or 3 in pieces_white:
                 return True
@@ -146,7 +132,6 @@ class Engine:
                 return True
 
         # KNN vs K
-
         if len(pieces_white) == 3 and len(pieces_black) == 1:
             if pieces_white.count(3) == 2:
                 return True
@@ -247,12 +232,7 @@ class Engine:
         else:
             self.info[3] = change
 
-
     def is_queen_castling_possible(self, for_white):
-        # 1: brak checka na króla
-        # 2: między królem a wiezą jest pusto
-        # 3: brak atakowania pól przez, które przechodzi król
-
         if for_white:
             row = 7
         else:
@@ -267,9 +247,6 @@ class Engine:
         return False
 
     def is_king_castling_possible(self, for_white):
-        # 1: brak checka na króla
-        # 2: między królem a wiezą jest pusto
-        # 3: brak atakowania pól przez, które przechodzi król
         if for_white:
             row = 7
         else:
@@ -281,6 +258,7 @@ class Engine:
             return True
 
         return False
+
     def is_castling(self, x_start, y_start, x_end, y_end, piece):
         if abs(piece) == 2: # jest to król
             if abs(x_start - x_end) == 2:   # ruch o 2 pola to roszada
@@ -294,9 +272,6 @@ class Engine:
         else:
             return False
 
-
-
-    ## it should be called always after checking if move is valid
     def is_it_capture(self, x_end, y_end):
         if self.board[y_end][x_end] == 0:
             return False
@@ -316,7 +291,7 @@ class Engine:
                     return position
 
     def is_valid_move(self, x_start, y_start, x_end, y_end):
-        moves = self.valid_moves(x_start, y_start) ## nie działa  self.valid_moves(x_start, y_start, board) ??
+        moves = self.valid_moves(x_start, y_start)
         move = (x_start, y_start, x_end, y_end)
 
         if moves == None:
@@ -328,8 +303,6 @@ class Engine:
 
         return False
 
-
-    ## generating all posible moves for white or for black
     def all_valid_moves(self, for_white, checking = False):
         all_moves = []
         for i in range(SIZE):
@@ -347,7 +320,6 @@ class Engine:
 
         return all_moves
 
-    # 4 możliwośći zwraca
     def append_move_as_promotion(self, x_start, y_start, x_end, y_end, moves):
         moves.append((x_start, y_start, x_end, y_end, 9))
         moves.append((x_start, y_start, x_end, y_end, 5))
@@ -404,7 +376,7 @@ class Engine:
             else:
                 moves.append((x, y, x + 1, y + 1))
 
-        ## EN PASSANT !
+        ## EN PASSANT
         move = self.info[5]
         # print(f"move {move}")
         if move != None:
@@ -424,11 +396,11 @@ class Engine:
                 move = (x, y, x_move, y_move)
                 if not (x_move >= 0 and y_move >= 0 and x_move < SIZE and y_move < SIZE):
                     continue
-                if self.board[y_move][x_move] != 0:  ## if there is a piece
-                    if self.is_white_piece(x_move, y_move) == is_white:  ## if the piece is the same color
+                if self.board[y_move][x_move] != 0:
+                    if self.is_white_piece(x_move, y_move) == is_white:
                         break
                     else:
-                        moves.append(move)  ## capture
+                        moves.append(move)
                         break
                 moves.append(move)
 
@@ -442,13 +414,14 @@ class Engine:
             move = (x, y, x_move, y_move)
             if not (x_move >= 0 and y_move >= 0 and x_move < SIZE and y_move < SIZE):
                 continue
-            if self.board[y_move][x_move] != 0:  ## if there is a piece
-                if self.is_white_piece(x_move, y_move) == is_white:  ## if the piece is the same color
+            if self.board[y_move][x_move] != 0:
+                if self.is_white_piece(x_move, y_move) == is_white:
                     continue
                 else:
                     moves.append(move)
                     continue
             moves.append(move)
+
     def generate_rook_moves(self, x, y, moves):
         direction = [(1, 0), (-1, 0), (0, -1), (0, 1)]
         is_white = self.is_white_piece(x, y)
@@ -460,8 +433,8 @@ class Engine:
                 move = (x, y, x_move, y_move)
                 if not (x_move >= 0 and y_move >= 0 and x_move < SIZE and y_move < SIZE):
                     continue
-                if self.board[y_move][x_move] != 0:  ## if there is a piece
-                    if self.is_white_piece(x_move, y_move) == is_white:  ## if the piece is the same color
+                if self.board[y_move][x_move] != 0:
+                    if self.is_white_piece(x_move, y_move) == is_white:
                         break
                     else:
                         moves.append(move)  ## capture
@@ -478,8 +451,8 @@ class Engine:
                 move = (x, y, x_move, y_move)
                 if not (x_move >= 0 and y_move >= 0 and x_move < SIZE and y_move < SIZE):
                     continue
-                if self.board[y_move][x_move] != 0:  ## if there is a piece
-                    if self.is_white_piece(x_move, y_move) == is_white:  ## if the piece is the same color
+                if self.board[y_move][x_move] != 0:
+                    if self.is_white_piece(x_move, y_move) == is_white:
                         break
                     else:
                         moves.append(move)  ## capture
@@ -495,11 +468,11 @@ class Engine:
             move = (x, y, x_move, y_move)
             if not (x_move >= 0 and y_move >= 0 and x_move < SIZE and y_move < SIZE):
                 continue
-            if self.board[y_move][x_move] != 0:  ## if there is a piece
-                if self.is_white_piece(x_move, y_move) == is_white:  ## if the piece is the same color
+            if self.board[y_move][x_move] != 0:
+                if self.is_white_piece(x_move, y_move) == is_white:
                     continue
                 else:
-                    moves.append(move)  ## capture
+                    moves.append(move)
                     continue
             moves.append(move)
 
@@ -538,11 +511,12 @@ class Engine:
             # Check if the move results in a check for the current player
             if not new_engine.is_check(is_white):  # Valid if it doesn't put the king in check
                 valid_moves.append(move)
-            # # Undo the move to restore the original board state
+            # Undo the move to restore the original board state
             new_engine.undo_move_board(move[0], move[1], move[2], move[3], piece, is_white, changes, last2_move)
             new_engine.update_valid_moves(True)
 
         return valid_moves
+
     def valid_moves(self,x,y, checking = False):
         piece = self.get_figure(x, y)
         moves = []
@@ -575,7 +549,6 @@ class Engine:
             self.generate_queen_moves(x, y, moves)
 
         ## Ruchy królem(wraz z roszadą)
-        # add castling
         if abs(piece) == 2:
             self.generate_king_moves(x, y, moves, checking)
 
@@ -616,7 +589,6 @@ class Engine:
             self.board[start_y][start_x] = 0
 
     def update_info_castling_rights(self, start_x, end_x, changes, is_white, piece_from, piece_to):
-        # sprawdzić czy to ruch królem lub którąś z wież lub czy wieża jest zbita
         if abs(piece_from) == 2:
 
             if self.queen_castling_rights(is_white):
@@ -692,14 +664,12 @@ class Engine:
         return piece_to, is_white, changes, last2_move
 
 
-    ## uzywac  po wykonaniu move_board i zmianie tury
     def update_valid_moves(self,checking = False):
         # ## zapisywanie valid_mmoves
         self.last_valid_moves_white = self.valid_moves_white
         self.last_valid_moves_black = self.valid_moves_black
         self.valid_moves_white = self.all_valid_moves(True,checking)
         self.valid_moves_black = self.all_valid_moves(False,checking)
-
 
     def update_valid_moves_white(self,checking = False):
         self.last_valid_moves_white = self.valid_moves_white
@@ -722,8 +692,6 @@ class Engine:
     def undo_valid_moves_black(self):
         self.valid_moves_black = self.last_valid_moves_black
         self.last_valid_moves_black = None
-
-
 
     def undo_castlig_right_changes(self, changes, is_white):
         if changes[0]:
@@ -775,7 +743,6 @@ class Engine:
         self.info[7] = changes[4] # cofanie enpassant
         self.info[9] = changes[2] # cofanie zasady 50 ruchow
         self.info[10] = changes[5] # cofanie score
-
 
     def is_white_piece(self, x, y):
         piece = self.get_figure(x, y)

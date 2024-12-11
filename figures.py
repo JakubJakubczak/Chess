@@ -1,15 +1,4 @@
-### jak zrobic wyswietlanie caly czas stanu jak i zmian
-### w konstruktorze figury dodać boarda, po to, żeby init zrobić
-### poprawic boarda z przekazywania funkcją na po prostu sel.board
-############ JAK DOBRZE WGRAC IMAGES
-############## PRZEKAZAC INFORMACJE O BIERCE I POZYCJI W DRAG
-### DODAC CANVAS JAKO ZMIENNA KLASY
-## TE BOARDY LEPIEJ ZROBIC W FUNKCJACH, BEZ SENSU JE PRZEKAZYWAC ARGUMENTEM
 
-
-###########################
-##### TRZEBA PRZECHOWYWAC PHOTO IMAGE BO INACZEJ GARBAGE COLLECTOR USUNIE JE
-##########################
 from tkinter import *
 from PIL import Image, ImageTk
 from Const import *
@@ -19,7 +8,6 @@ class Figures:
     def __init__(self, board, game):
        self.board = board
        self.game = game
-
        self.images = [[None for _ in range(SIZE)] for _ in range(SIZE)]
        self.canvas_images = [[None for _ in range(SIZE)] for _ in range(SIZE)]
        self.images = self.load_canvas_images(board.board) # list
@@ -47,15 +35,9 @@ class Figures:
                 self.game.game_menu.add_piece_to_player(self.board.white_turn, tags)
             self.board.canvas_board.delete(item_del)
 
-
-
-
-
-
         color = 1 if self.board.engine.is_white_piece(x_end, y_end) else -1
         piece = self.board.engine.get_figure(x_end, y_end)
         ## centrowanie figury po przeniesieniu
-
         figure_coords_x, figure_coords_y = self.calculate_first_cordinates()
 
         center_coords_x = figure_coords_x + (x_end * SPACE_SIZE)
@@ -127,8 +109,6 @@ class Figures:
                     self.promotion = (i, 7, value)
                     return True
 
-            # print(f"tags: {item_tag1}, {item_tag2}")
-
         self.promotion = None
 
         return False
@@ -149,9 +129,6 @@ class Figures:
 
         print(f"promotion value{image_dict[abs(value)]}  ")
         self.board.canvas_board.itemconfig(self.canvas_images[y][x], image=image)
-
-
-
 
     def calculate_image_dimensions(self, image):
         return [image.width(),image.height()]

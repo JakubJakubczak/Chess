@@ -1,5 +1,4 @@
 from tkinter import *
-
 import Const
 from Const import *
 from game import *
@@ -86,7 +85,6 @@ class Menu_own:
         self.menu_window.destroy()
         Const.settings["AI"] = True
         game = Game(self.back_to_menu)
-
 
     def setup(self):
         pass

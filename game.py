@@ -9,7 +9,6 @@ from Const import *
 from menu import *
 import time
 
-
 class Game:
     def __init__(self, back_to_menu_callback):
         self.back_to_menu_callback = back_to_menu_callback
@@ -34,13 +33,9 @@ class Game:
            random_move =  self.ai.generate_random_move(not settings["TURN"], self.board.engine)
            self.move(None, random_move[0], random_move[1], random_move[2], random_move[3])
 
-
     def handle_game_end(self):
         print("Game ended")
         result = self.board.get_result()
-        # Handle game over logic here as before (message box or print)
-        # from tkinter import messagebox
-        # messagebox.showinfo("Game Over", f"Game Over: {result}")
         self.game_menu.display_result(result)
 
     def update(self, drag_data, x_start, y_start, x_end, y_end):
@@ -57,19 +52,12 @@ class Game:
         self.update_menu_and_highlight(x_start, y_start, x_end, y_end)
         self.board.check_game_state()
 
-
-
         if settings["AI"] and self.board.white_turn != settings["TURN"] and self.board.game_on:
             self.make_ai_move()
             self.update_menu_and_highlight(x_start, y_start, x_end, y_end)
             self.board.check_game_state()
 
         print(f"all_valid_moves {self.board.engine.all_valid_moves(False)}")
-        print(f"all_valid_moves for white {self.board.engine.valid_moves_white}")
-        print(f"all_valid_moves for black {self.board.engine.valid_moves_black}")
-
-
-
 
     def update_menu_and_highlight(self, x_start, y_start, x_end, y_end):
         self.board.add_to_history(x_start, y_start, x_end, y_end)
@@ -82,25 +70,12 @@ class Game:
         self.board.dehighlight_last_move()
         self.board.highlight_move()
 
-
     def make_ai_move(self):
         promotion_val = None
-
-        ## RANDOM MOVE
-        # random_move = self.ai.generate_random_move(not settings["TURN"], self.board.engine)
-        # if len(random_move) == 5:
-        #     promotion_val = random_move[4]
-        #
-        # self.move(None, random_move[0], random_move[1], random_move[2], random_move[3], promotion_val)
-        # self.board.white_turn = not self.board.white_turn
-
-
 
         start_time = time.time()
         best_move = self.ai.find_best_move(DEPTH, -1, self.board.engine)
         end_time = time.time()
-
-
 
         elapsed_time = end_time - start_time
         print("Elapsed time:", elapsed_time, "seconds")
@@ -113,19 +88,13 @@ class Game:
             promotion_val = best_move[0][4]
 
         print(f"best move {best_move}")
-
         self.move(None, best_move[0][0], best_move[0][1], best_move[0][2], best_move[0][3], promotion_val)
-
         self.board.white_turn = not self.board.white_turn
 
     def move(self, drag_data, x_start, y_start, x_end, y_end, promotion_val = None):
         self.board.engine.move_board(x_start, y_start, x_end, y_end, promotion_val)
         self.board.engine.update_valid_moves()
-
         self.figures.move_images(drag_data, x_start, y_start, x_end, y_end)
-
-
-
 
     def surrender(self):
         self.board.result = -1 if self.board.white_turn else 1

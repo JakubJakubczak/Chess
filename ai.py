@@ -1,15 +1,10 @@
 import random
 import copy
 from Const import *
-from multiprocessing import Pool
-from concurrent.futures import ProcessPoolExecutor
 class Ai:
     def __init__(self):
-        # self.engine = board.engine
-        # self.copy_engine = copy.deepcopy(self.engine)
         self.best_move = None
         self.iteration = 0
-
 
     def negamax(self, depth, color, engine_copy, alpha, beta, moves):
         if depth == 0:
@@ -32,7 +27,6 @@ class Ai:
             evaluation = -evaluation
 
             engine_copy.undo_move_board(start_x, start_y, end_x, end_y, piece, is_white, changes, last2_move)
-
             engine_copy.update_valid_moves(True)
 
             if evaluation > max_eval:
@@ -48,21 +42,18 @@ class Ai:
 
         return (max_eval, self.best_move)
 
-    def find_best_move(self, depth, color, engine, return_queue=None):
+    def find_best_move(self, depth, color, engine):
         engine_copy = copy.deepcopy(engine)
 
         for_white = True if color == 1 else False
         valid_moves = engine_copy.all_valid_moves(for_white)
         score, best_move = self.negamax(depth, color, engine_copy, -MATE, MATE, valid_moves)
-        # score, best_move = self.parallel_negamax(depth, color, engine_copy, -MATE, MATE)
-        print(f"Best move found: {best_move} with score {score}")
 
+        print(f"Liczba gałęzi {self.iteration}")
         return best_move, score
-
 
     def generate_random_move(self, is_white, engine):
         valid_moves = engine.all_valid_moves(is_white)
-
         if not valid_moves:
             return None
 
@@ -83,9 +74,6 @@ class Ai:
         # Zwracnie ruchów posortowanych malejąco
         return [move for _, move in sorted(eval_moves, key=lambda x: x[0], reverse=True)]
 
-    # def update_copy_engine(self, engine):
-    #     self.copy_engine = copy.deepcopy(engine)
-
     def evaluate(self, engine):
         material_score = self.evaluate_material(engine)
         position_score = self.evaluate_position(engine)
@@ -101,7 +89,7 @@ class Ai:
         return len(engine.valid_moves_white) - len(engine.valid_moves_black)
 
     def evaluate_material(self, engine):
-        piece_values = {1: 1, 2: 100, 3: 3, 4: 3, 5: 5, 9: 9, -1: -1, -2: -100, -3: -3, -4: -3, - 5: -5, -9: -9,}
+        piece_values = {1: 1, 2: 100, 3: 3, 4: 3, 5: 5, 9: 9, -1: -1, -2: -100, -3: -3, -4: -3, - 5: -5, -9: -9}
         score = 0
         for col in range(SIZE):
             for row in range(SIZE):
@@ -130,7 +118,6 @@ class Ai:
         elif abs(piece) == 9:
             return self.queen_table[y][x]
 
-
     def evaluate_position(self, engine):
         score = 0
 
@@ -144,19 +131,7 @@ class Ai:
                 if piece!= 0:
                     total_value = piece_abs + position_value
                     score += total_value if engine.is_white_piece(row, col ) else -total_value
-
-
         return score
-
-    def evaluate_king_safety(self, board, color):
-        pass
-
-    def evaluate_pawn_structure(self, board):
-        pass
-
-    def evaluate_center_control(self, board):
-        pass
-
 
     pawn_table = [
         [0, 0, 0, 0, 0, 0, 0, 0],
@@ -235,95 +210,3 @@ class Ai:
         [-50, -40, -30, -20, -20, -30, -40, -50]
     ]
 
-
-   #  def evaluate_move(self, move, depth, color, engine_copy, alpha, beta, negamax_func):
-   #      """
-   #      Standalone function to evaluate a single move.
-   #      This function must be at the top level to be pickled by ProcessPoolExecutor.
-   #      """
-   #      local_engine = copy.deepcopy(engine_copy)  # Ensure thread/process safety
-   #      start_x, start_y, end_x, end_y, *promotion = move
-   #      promotion_type = promotion[0] if promotion else None
-   #
-   #      piece, is_white, changes, last2_move = local_engine.move_board(
-   #          start_x, start_y, end_x, end_y, promotion_type
-   #      )
-   #      next_moves = local_engine.all_valid_moves(not is_white)
-   #      evaluation, _ = negamax_func(depth - 1, -color, local_engine, -beta, -alpha, next_moves)
-   #      local_engine.undo_move_board(start_x, start_y, end_x, end_y, piece, is_white, changes, last2_move)
-   #
-   #      return -evaluation, move
-   #  def negamax_parallel(self, depth, color, engine_copy, alpha, beta, moves):
-   #      if depth == 0 or engine_copy.game_over():
-   #          return color * self.evaluate(engine_copy), self.best_move
-   #
-   #      max_eval = float('-inf')
-   #      best_move = None
-   #      for_white = True if color == 1 else False
-   #
-   #      if depth == DEPTH:  # Root level parallelization
-   #          # Parallelize move evaluation
-   #          with ProcessPoolExecutor() as executor:
-   #              futures = [
-   #                  executor.submit(
-   #                      self.evaluate_move, move, depth, color, engine_copy, alpha, beta, self.negamax
-   #                  )
-   #                  for move in moves
-   #              ]
-   #
-   #              for future in futures:
-   #                  evaluation, move = future.result()
-   #                  if evaluation > max_eval:
-   #                      max_eval = evaluation
-   #                      best_move = move
-   #
-   #                  alpha = max(alpha, max_eval)
-   #                  if alpha >= beta:
-   #                      break  # Beta cutoff
-   #
-   #          if depth == DEPTH:
-   #              self.best_move = best_move
-   #
-   #      else:  # Inner nodes: Sequential
-   #          for move in moves:
-   #              start_x, start_y, end_x, end_y, *promotion = move
-   #              promotion_type = promotion[0] if promotion else None
-   #
-   #              piece, is_white, changes, last2_move = engine_copy.move_board(
-   #                  start_x, start_y, end_x, end_y, promotion_type
-   #              )
-   #              next_moves = engine_copy.all_valid_moves(not for_white)
-   #              evaluation, _ = self.negamax(depth - 1, -color, engine_copy, -beta, -alpha, next_moves)
-   #              evaluation = -evaluation
-   #
-   #              engine_copy.undo_move_board(start_x, start_y, end_x, end_y, piece, is_white, changes, last2_move)
-   #
-   #              if evaluation > max_eval:
-   #                  max_eval = evaluation
-   #                  if depth == DEPTH:
-   #                      self.best_move = move
-   #
-   #              alpha = max(alpha, max_eval)
-   #              if alpha >= beta:
-   #                  break
-   #
-   #      return max_eval, best_move
-   #
-   # def parallel_negamax(self, depth, color, engine_copy, alpha, beta):
-   #      for_white = True if color == 1 else False
-   #      moves = engine_copy.all_valid_moves(for_white)
-   #      args = [( depth, color, engine_copy, alpha, beta, [move]) for move in moves]
-   #
-   #      eval_moves = []
-   #
-   #      with Pool(processes=PROCESSES) as pool:
-   #          eval_moves = pool.map(self.negamax_wrapper, args)
-   #
-   #      eval_moves.sort(reverse=True, key=lambda x: x[0])
-   #
-   #      return eval_moves[0]
-   #
-   #  def negamax_wrapper(self, args):
-   #      # Unpack arguments from the tuple (move, depth, color, engine_copy, alpha, beta)
-   #      depth, color, engine_copy, alpha, beta, move = args
-   #      return self.negamax(depth, color, engine_copy, alpha, beta, move)

@@ -51,12 +51,11 @@ class Dragger:
 
     def drag_motion(self, event):
         if self.drag_data["item"] is not None:
-            ## compute how much the mouse has moved
             delta_x = event.x - self.drag_data["x"]
             delta_y = event.y - self.drag_data["y"]
-            # move the object the appropriate amount
+
             self.canvas.move(self.drag_data["item"], delta_x, delta_y)
-            # record the new position
+
             self.drag_data["x"] = event.x
             self.drag_data["y"] = event.y
 
