@@ -11,26 +11,39 @@ python main.py
 
 ## 2. Wprowadzenie
 Celem projektu było stworzenie aplikacji do gry w szachy w Pythonie, wykorzystując bibliotekę Tkinter do interfejsu graficznego (GUI) oraz klasyczny silnik szachowy oparty na algorytmie Negamax z optymalizacją alfa-beta. Aplikacja umożliwia grę z komputerem, oferując:
--Interfejs graficzny: Szachownica z możliwością przeciągania figur, menu z opcjami (nowa gra, wybór silnika, ustawienia), wyświetlanie punktów, zbitych figur, oceny pozycji i historii gry w formacie LAN.
--Logika gry: Zasady ruchu figur, generowanie możliwych ruchów, wykonywanie ruchów.
--Silnik szachowy: Ocena pozycji oparta na wartości figur i parametrach pozycyjnych, zoptymalizowany algorytm Negamax z cięciami alfa-beta.
+- **Interfejs graficzny**: Szachownica z możliwością przeciągania figur, menu z opcjami (nowa gra, wybór silnika, ustawienia), wyświetlanie punktów, zbitych figur, oceny pozycji i historii gry w formacie LAN.
+- **Logika gry**: Zasady ruchu figur, generowanie możliwych ruchów, wykonywanie ruchów.
+- **Silnik szachowy**: Ocena pozycji oparta na wartości figur i parametrach pozycyjnych, zoptymalizowany algorytm Negamax z cięciami alfa-beta.
 ## 3. Interfejs graficzny
-Aplikacja zawiera menu główne, a po wyborze trybu gry wyświetla się ponumerowana szachownica z menu gry, gdzie bierki można przesuwać za pomocą myszy/
+Aplikacja zawiera menu główne, a po wyborze trybu gry wyświetla się ponumerowana szachownica z menu gry, gdzie bierki można przesuwać za pomocą myszy.
+
 ### Menu główne
-![Menu główne](images/menu_glowne.png)
+
+<div align="center">
+  <img src="images/menu_glowne.png" alt="Menu główne" width="600"/>
+</div>
+
 ### Szachownica
-![Szachownica](images/podswietlenie_ruchow.png)
+
+<div align="center">
+  <img src="images/podswietlenie_ruchow.png" alt="Szachownica" width="600"/>
+</div>
+
 ### Szachownica wraz z menu gry
-![Szachownica wraz z menu gry](images/widok_gry_srodek.png)
+
+<div align="center">
+  <img src="images/widok_gry_srodek.png" alt="Szachownica wraz z menu gry" width="600"/>
+</div>
+
 ## 4. Najważniejsze metody aplikacji
 W celu realizacji logicznej części aplikacji zostały zaimplementowane metody takie jak m.in:
--sprawdzanie szacha,
--sprawdzanie mata,
--sprawdzanie remisu(pat, zasada 50 posunięć, niewystarczający materiał),
--generowanie możliwych ruchów dla każdej bierki(uwzględniająć roszadę króla, promocję piona i bicie w przelocie),
--generowanie wszystkich możliwych ruchów dla gracza,
--wykonywanie ruchu,
--cofnięcie ruchu.
+- **sprawdzanie szacha**,
+- **sprawdzanie mata**,
+- **sprawdzanie remisu(pat, zasada 50 posunięć, niewystarczający materiał)**,
+- **generowanie możliwych ruchów dla każdej bierki(uwzględniająć roszadę króla, promocję piona i bicie w przelocie)**,
+- **generowanie wszystkich możliwych ruchów dla gracza**,
+- **wykonywanie ruchu**,
+- **cofnięcie ruchu**.
 
 ## 5. Silnik szachowy
 Silnik szachowy opiera się na przeszukiwanie możliwych ruchów za pomocą algorytmu negamax oraz ocenie pozycji przy użyciu ręcznie pisanych heurystyk. Stan gry reprezentowany jest za pomocą dwuwymiarowej tablicy, gdzie figura określana jest za pomocą liczby całkowitej, np. 9 dla hetmana koloru białęgo i -9 dla hetmana koloru czarnego.
