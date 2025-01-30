@@ -1,12 +1,12 @@
 # Aplikacja do gry w szachy z silnikiem szachowym
 
-## 1. Jak uruchomiwć?
+## 1. Jak uruchomić?
 
 ### Sklonuj repozytorium:
 git clone https://github.com/JakubJakubczak/Chess.git
 ### Wejdź do folderu:
 cd Chess
-### Uruchom aplikację(python mudi być zainstalowany):
+### Uruchom aplikację(python musi być zainstalowany):
 python main.py
 
 ## 2. Wprowadzenie
